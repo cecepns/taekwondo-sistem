@@ -1,0 +1,760 @@
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { request } from '../utils/request';
+import { API_ENDPOINTS } from '../utils/endpoints';
+import Modal from '../components/Modal';
+import Pagination from '../components/Pagination';
+import { 
+  Search, Plus, Eye, Printer, BadgeCent, FileText, CheckCircle, Clock, Trash2, Calendar, Edit,
+  FileSpreadsheet
+} from 'lucide-react';
+
+export default function Dues({ user }) {
+  const [dues, setDues] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [editingDue, setEditingDue] = useState(null);
+
+  // Filters & Pagination
+  const [search, setSearch] = useState('');
+  const [filterMonth, setFilterMonth] = useState('');
+  const [filterYear, setFilterYear] = useState(new Date().getFullYear());
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Modal payment state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({
+    member_id: '',
+    months: [],
+    year: new Date().getFullYear(),
+    amount: '',
+    method: 'cash',
+    notes: ''
+  });
+  const [attachment, setAttachment] = useState(null);
+
+  // Receipt Modal State
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+  const fetchDues = async () => {
+    setIsLoading(true);
+    try {
+      const res = await request.get(API_ENDPOINTS.DUES.LIST);
+      if (res.success) {
+        // filter client-side search since we have small sandbox dataset
+        let filtered = res.data || [];
+        if (search) {
+          filtered = filtered.filter(d => 
+            d.member_name.toLowerCase().includes(search.toLowerCase()) ||
+            d.member_number.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+
+        if (filterMonth) {
+          filtered = filtered.filter(d => parseInt(d.month) === parseInt(filterMonth));
+        }
+        if (filterYear) {
+          filtered = filtered.filter(d => parseInt(d.year) === parseInt(filterYear));
+        }
+
+        const offset = (page - 1) * limit;
+        setDues(filtered.slice(offset, offset + limit));
+        setTotal(filtered.length);
+        setTotalPages(Math.ceil(filtered.length / limit));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const downloadDuesExcel = () => {
+    const getMonthNameLocal = (mNum) => {
+      const names = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      return names[mNum - 1] || '';
+    };
+
+    const runDownload = async () => {
+      try {
+        const res = await request.get(API_ENDPOINTS.DUES.LIST);
+        if (res.success) {
+          let list = res.data || [];
+          if (search) {
+            list = list.filter(d => 
+              d.member_name.toLowerCase().includes(search.toLowerCase()) ||
+              d.member_number.toLowerCase().includes(search.toLowerCase())
+            );
+          }
+          if (filterMonth) {
+            list = list.filter(d => parseInt(d.month) === parseInt(filterMonth));
+          }
+          if (filterYear) {
+            list = list.filter(d => parseInt(d.year) === parseInt(filterYear));
+          }
+
+          const headers = ['No', 'Nama Anggota', 'No Anggota', 'Iuran Bulan', 'Tahun', 'Tanggal Bayar', 'Nominal', 'Metode Bayar', 'Status'];
+          const rows = list.map((d, index) => [
+            index + 1,
+            d.member_name,
+            d.member_number,
+            getMonthNameLocal(d.month),
+            d.year,
+            new Date(d.payment_date).toLocaleDateString('id-ID'),
+            `Rp ${parseFloat(d.amount).toLocaleString()}`,
+            d.method.toUpperCase(),
+            d.status.toUpperCase()
+          ]);
+
+          const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", `Laporan_Iuran_${filterMonth ? `Bulan_${filterMonth}` : 'Semua_Bulan'}_${filterYear}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Gagal mendownload excel');
+      }
+    };
+    runDownload();
+  };
+
+  const downloadDuesPdf = () => {
+    const getMonthNameLocal = (mNum) => {
+      const names = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      return names[mNum - 1] || '';
+    };
+
+    const runDownload = async () => {
+      try {
+        const res = await request.get(API_ENDPOINTS.DUES.LIST);
+        if (res.success) {
+          let list = res.data || [];
+          if (search) {
+            list = list.filter(d => 
+              d.member_name.toLowerCase().includes(search.toLowerCase()) ||
+              d.member_number.toLowerCase().includes(search.toLowerCase())
+            );
+          }
+          if (filterMonth) {
+            list = list.filter(d => parseInt(d.month) === parseInt(filterMonth));
+          }
+          if (filterYear) {
+            list = list.filter(d => parseInt(d.year) === parseInt(filterYear));
+          }
+
+          const printWindow = window.open('', '_blank');
+          const titleStr = `Laporan Iuran Keuangan - ${filterMonth ? getMonthNameLocal(parseInt(filterMonth)) : 'Semua Bulan'} ${filterYear}`;
+
+          printWindow.document.write(`
+            <html>
+              <head>
+                <title>\${titleStr}</title>
+                <style>
+                  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; padding: 20px; line-height: 1.5; }
+                  h2 { margin-bottom: 5px; color: #0f172a; }
+                  p { font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 20px; }
+                  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+                  th { background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; padding: 10px 8px; text-align: left; font-weight: 600; text-transform: uppercase; color: #475569; }
+                  td { border-bottom: 1px solid #f1f5f9; padding: 10px 8px; color: #334155; }
+                  .text-center { text-align: center; }
+                  .text-right { text-align: right; font-weight: bold; }
+                  .status { font-weight: bold; text-transform: uppercase; }
+                  .status-sudah_bayar { color: #16a34a; }
+                  .status-belum_bayar { color: #dc2626; }
+                  .status-menunggak { color: #d97706; }
+                </style>
+              </head>
+              <body>
+                <h2>\${titleStr}</h2>
+                <p>Dicetak pada: \${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width: 40px;" class="text-center">No</th>
+                      <th>Nama Anggota</th>
+                      <th>No Anggota</th>
+                      <th>Iuran Bulan</th>
+                      <th>Tanggal Bayar</th>
+                      <th>Metode</th>
+                      <th>Status</th>
+                      <th class="text-right">Nominal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    \${list.map((d, idx) => \`
+                      <tr>
+                        <td class="text-center">\${idx + 1}</td>
+                        <td style="font-weight: 500;">\${d.member_name}</td>
+                        <td>\${d.member_number}</td>
+                        <td>\${getMonthNameLocal(d.month)} \${d.year}</td>
+                        <td>\${new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td style="text-transform: uppercase;">\${d.method}</td>
+                        <td class="status status-\${d.status}">\${d.status.replace('_', ' ')}</td>
+                        <td class="text-right">Rp \${parseFloat(d.amount).toLocaleString()}</td>
+                      </tr>
+                    \`).join('')}
+                    <tr>
+                      <td colspan="7" class="text-right" style="padding-top: 15px; border-bottom: none;">TOTAL PENERIMAAN:</td>
+                      <td class="text-right" style="padding-top: 15px; border-bottom: none; font-size: 13px; color: #1e293b;">
+                        Rp \${list.reduce((sum, d) => sum + parseFloat(d.amount), 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <script>
+                  window.onload = function() {
+                    window.print();
+                    window.close();
+                  }
+                </script>
+              </body>
+            </html>
+          `);
+          printWindow.document.close();
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Gagal mencetak PDF');
+      }
+    };
+    runDownload();
+  };
+
+  useEffect(() => {
+    fetchDues();
+  }, [page, limit, search, filterMonth, filterYear]);
+
+  useEffect(() => {
+    async function loadMembers() {
+      try {
+        const res = await request.get(API_ENDPOINTS.MEMBERS.LIST);
+        if (res.success) setMembers(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadMembers();
+  }, []);
+
+  const handleMonthToggle = (month) => {
+    const isSelected = paymentForm.months.includes(month);
+    let updatedMonths = [];
+    if (isSelected) {
+      updatedMonths = paymentForm.months.filter(m => m !== month);
+    } else {
+      updatedMonths = [...paymentForm.months, month];
+    }
+    
+    // Automatically estimate total fee based on IDR 150k monthly
+    const estimatedFee = updatedMonths.length * 150000;
+    setPaymentForm(prev => ({
+      ...prev,
+      months: updatedMonths,
+      amount: estimatedFee ? String(estimatedFee) : ''
+    }));
+  };
+
+  const startEditDue = (d) => {
+    setEditingDue(d);
+    setPaymentForm({
+      member_id: d.member_id,
+      months: [d.month],
+      year: d.year,
+      amount: String(d.amount),
+      method: d.method || 'cash',
+      notes: d.notes || '',
+      status: d.status || 'sudah_bayar'
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDueDelete = async (id) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus catatan transaksi iuran ini?')) return;
+    try {
+      const res = await request.delete(API_ENDPOINTS.DUES.DETAIL(id));
+      if (res.success) {
+        toast.success('Catatan transaksi iuran berhasil dihapus!');
+        fetchDues();
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Gagal menghapus transaksi iuran');
+    }
+  };
+
+  const handlePaySubmit = async (e) => {
+    e.preventDefault();
+    if (!paymentForm.member_id || paymentForm.months.length === 0 || !paymentForm.amount) {
+      return toast.error('Lengkapi form iuran terlebih dahulu!');
+    }
+
+    const payload = new FormData();
+    payload.append('member_id', paymentForm.member_id);
+    if (editingDue) {
+      payload.append('month', paymentForm.months[0]);
+      payload.append('status', paymentForm.status);
+    } else {
+      payload.append('months', JSON.stringify(paymentForm.months));
+    }
+    payload.append('year', paymentForm.year);
+    payload.append('amount', paymentForm.amount);
+    payload.append('method', paymentForm.method);
+    payload.append('notes', paymentForm.notes);
+    if (attachment) payload.append('attachment', attachment);
+
+    setIsLoading(true);
+    try {
+      let res;
+      if (editingDue) {
+        res = await request.put(API_ENDPOINTS.DUES.DETAIL(editingDue.id), payload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        res = await request.post(API_ENDPOINTS.DUES.PAY, payload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      if (res.success) {
+        toast.success(editingDue ? 'Data iuran berhasil diperbarui!' : 'Pembayaran iuran berhasil disimpan!');
+        setIsModalOpen(false);
+        setEditingDue(null);
+        resetForm();
+        fetchDues();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setPaymentForm({
+      member_id: '',
+      months: [],
+      year: new Date().getFullYear(),
+      amount: '',
+      method: 'cash',
+      notes: '',
+      status: 'sudah_bayar'
+    });
+    setAttachment(null);
+  };
+
+  const getMonthName = (mNum) => {
+    const names = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    return names[mNum - 1] || '';
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Banner */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-100">Kelola Pembayaran Iuran</h2>
+          <p className="text-xs text-slate-400">Total iuran terkumpul bulan ini</p>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-blue-600/20"
+        >
+          <Plus size={16} /> Catat Pembayaran
+        </button>
+      </div>
+
+      {/* Filter and Search */}
+      <div className="glass-panel p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="relative w-full md:w-80">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+            <Search size={16} />
+          </span>
+          <input
+            type="text"
+            placeholder="Cari anggota, no. iuran..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          {/* Month Filter */}
+          <select
+            value={filterMonth}
+            onChange={(e) => setFilterMonth(e.target.value)}
+            className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-none"
+          >
+            <option value="">Semua Bulan</option>
+            <option value="1">Januari</option>
+            <option value="2">Februari</option>
+            <option value="3">Maret</option>
+            <option value="4">April</option>
+            <option value="5">Mei</option>
+            <option value="6">Juni</option>
+            <option value="7">Juli</option>
+            <option value="8">Agustus</option>
+            <option value="9">September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+          </select>
+
+          {/* Year Filter */}
+          <input
+            type="number"
+            value={filterYear}
+            onChange={(e) => setFilterYear(parseInt(e.target.value) || new Date().getFullYear())}
+            className="w-20 px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-none"
+            placeholder="Tahun"
+          />
+
+          {/* Download Buttons */}
+          <button
+            onClick={downloadDuesExcel}
+            className="px-3 py-1.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1.5 transition-colors shadow-md shadow-emerald-600/10"
+            title="Download Excel"
+          >
+            <FileSpreadsheet size={13} /> Excel
+          </button>
+          <button
+            onClick={downloadDuesPdf}
+            className="px-3 py-1.5 text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg flex items-center gap-1.5 transition-colors shadow-md shadow-red-600/20"
+            title="Download PDF"
+          >
+            <FileText size={13} /> PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Dues Table */}
+      <div className="glass-panel rounded-xl border border-slate-800 shadow-xl overflow-hidden">
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-400">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          </div>
+        ) : dues.length === 0 ? (
+          <div className="p-12 text-center text-slate-550 text-xs">
+            Tidak ada transaksi pembayaran iuran ditemukan
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-950/40 border-b border-slate-800 text-slate-400 font-semibold uppercase">
+                  <th className="p-4">Anggota</th>
+                  <th className="p-4">Iuran Bulan</th>
+                  <th className="p-4">Tanggal Bayar</th>
+                  <th className="p-4">Nominal</th>
+                  <th className="p-4">Metode</th>
+                  <th className="p-4 text-center">Bukti / Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {dues.map(d => (
+                  <tr key={d.id} className="hover:bg-slate-850/40">
+                    <td className="p-4">
+                      <div className="font-semibold text-slate-200">{d.member_name}</div>
+                      <span className="text-[10px] text-slate-500">{d.member_number}</span>
+                    </td>
+                    <td className="p-4 text-slate-300 font-medium">
+                      {getMonthName(d.month)} {d.year}
+                    </td>
+                    <td className="p-4 text-slate-400">
+                      {new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td className="p-4 text-slate-100 font-semibold">
+                      Rp {parseFloat(d.amount).toLocaleString()}
+                    </td>
+                    <td className="p-4">
+                      <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 uppercase text-[10px] font-bold">
+                        {d.method}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center justify-center gap-2">
+                        {d.attachment && (
+                          <a 
+                            href={d.attachment} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-semibold transition-colors"
+                          >
+                            Lihat Bukti
+                          </a>
+                        )}
+                        <button 
+                          onClick={() => {
+                            setSelectedReceipt(d);
+                            setIsReceiptOpen(true);
+                          }}
+                          className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-colors inline-flex items-center gap-1 text-[10px] font-medium"
+                          title="Print Receipt"
+                        >
+                          <Printer size={13} /> Kuitansi
+                        </button>
+                        <button 
+                          onClick={() => startEditDue(d)}
+                          className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:text-blue-500 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit size={13} />
+                        </button>
+                        <button 
+                          onClick={() => handleDueDelete(d.id)}
+                          className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:text-red-500 transition-colors"
+                          title="Hapus"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <Pagination 
+          page={page}
+          limit={limit}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onLimitChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
+        />
+      </div>
+
+      {/* Record Payment Modal */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => { 
+          setIsModalOpen(false); 
+          setEditingDue(null); 
+          resetForm(); 
+        }} 
+        title={editingDue ? "Edit Transaksi Iuran" : "Catat Pembayaran Iuran"}
+      >
+        <form onSubmit={handlePaySubmit} className="space-y-6 text-xs text-slate-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* Pilih Anggota */}
+            <div className="space-y-1 md:col-span-2">
+              <label className="font-semibold text-slate-300">Pilih Anggota *</label>
+              <select
+                value={paymentForm.member_id}
+                onChange={(e) => setPaymentForm(prev => ({ ...prev, member_id: e.target.value }))}
+                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500"
+                required
+              >
+                <option value="">Pilih Anggota Dojang</option>
+                {members.map(m => (
+                  <option key={m.id} value={m.id}>{m.name} ({m.member_number})</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Tahun */}
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-300">Tahun *</label>
+              <input
+                type="number"
+                value={paymentForm.year}
+                onChange={(e) => setPaymentForm(prev => ({ ...prev, year: parseInt(e.target.value) }))}
+                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 focus:outline-none"
+                required
+              />
+            </div>
+
+            {/* Metode Pembayaran */}
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-300">Metode Bayar *</label>
+              <select
+                value={paymentForm.method}
+                onChange={(e) => setPaymentForm(prev => ({ ...prev, method: e.target.value }))}
+                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+              >
+                <option value="cash">Cash / Tunai</option>
+                <option value="transfer">Bank Transfer</option>
+                <option value="qris">QRIS Digital</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Bulan Checklists or Dropdown */}
+          {editingDue ? (
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-300">Bulan Pembayaran *</label>
+              <select
+                value={paymentForm.months[0] || ''}
+                onChange={(e) => setPaymentForm(prev => ({ ...prev, months: [parseInt(e.target.value)] }))}
+                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                required
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
+                  <option key={m} value={m}>{getMonthName(m)}</option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <label className="font-semibold text-slate-300 block">Pilih Bulan Pembayaran *</label>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
+                  <label 
+                    key={m}
+                    className={`py-2 px-1 rounded-lg border text-center font-medium block cursor-pointer transition-all ${
+                      paymentForm.months.includes(m)
+                        ? 'bg-blue-600/10 border-blue-500 text-blue-400 font-bold'
+                        : 'bg-slate-950/20 border-slate-800 text-slate-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={paymentForm.months.includes(m)}
+                      onChange={() => handleMonthToggle(m)}
+                      className="hidden"
+                    />
+                    <span>{getMonthName(m)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Nominal Bayar */}
+          <div className="space-y-1">
+            <label className="font-semibold text-slate-300">Total Nominal Pembayaran (Rp) *</label>
+            <input
+              type="number"
+              placeholder="Total pembayaran otomatis terisi"
+              value={paymentForm.amount}
+              onChange={(e) => setPaymentForm(prev => ({ ...prev, amount: e.target.value }))}
+              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 font-semibold"
+              required
+            />
+          </div>
+
+          {/* Status Pembayaran (Only when editing) */}
+          {editingDue && (
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-300">Status Pembayaran *</label>
+              <select
+                value={paymentForm.status}
+                onChange={(e) => setPaymentForm(prev => ({ ...prev, status: e.target.value }))}
+                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                required
+              >
+                <option value="sudah_bayar">Sudah Bayar</option>
+                <option value="belum_bayar">Belum Bayar</option>
+                <option value="menunggak">Menunggak</option>
+              </select>
+            </div>
+          )}
+
+          {/* Upload attachment */}
+          <div className="space-y-1">
+            <label className="font-semibold text-slate-300 block">Bukti Bayar / Slip Transfer (Optional)</label>
+            <input 
+              type="file" 
+              onChange={(e) => setAttachment(e.target.files[0])}
+              className="w-full text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-slate-850 file:text-slate-200"
+            />
+          </div>
+
+          {/* Catatan */}
+          <div className="space-y-1">
+            <label className="font-semibold text-slate-300">Keterangan / Keterangan</label>
+            <textarea
+              rows="2"
+              value={paymentForm.notes}
+              onChange={(e) => setPaymentForm(prev => ({ ...prev, notes: e.target.value }))}
+              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/85">
+            <button
+              type="button"
+              onClick={() => { 
+                setIsModalOpen(false); 
+                setEditingDue(null); 
+                resetForm(); 
+              }}
+              className="px-4 py-2 rounded-xl bg-slate-850 text-slate-300"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg"
+            >
+              {isLoading ? 'Menyimpan...' : (editingDue ? 'Simpan Perubahan' : 'Bayar Sekarang')}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Print Receipt Modal */}
+      <Modal isOpen={isReceiptOpen} onClose={() => setIsReceiptOpen(false)} title="Bukti Kuitansi Pembayaran">
+        {selectedReceipt && (
+          <div className="space-y-6 text-xs text-slate-350 p-4 border border-slate-800 rounded-xl bg-slate-950/40">
+            <div className="text-center space-y-1">
+              <h3 className="text-sm font-bold text-slate-100">KUITANSI RESMI</h3>
+              <p className="text-slate-500 uppercase tracking-widest text-[10px]">Taekwondo Club Management</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-y-2 border-t border-b border-slate-800 py-4">
+              <span className="text-slate-550">No. Transaksi</span>
+              <span className="text-slate-200 font-semibold text-right">#TX-{selectedReceipt.id}</span>
+              
+              <span className="text-slate-550">Nama Anggota</span>
+              <span className="text-slate-200 font-semibold text-right">{selectedReceipt.member_name}</span>
+
+              <span className="text-slate-550">No. Anggota</span>
+              <span className="text-slate-200 text-right">{selectedReceipt.member_number}</span>
+
+              <span className="text-slate-550">Pembayaran Iuran</span>
+              <span className="text-slate-200 font-medium text-right">{getMonthName(selectedReceipt.month)} {selectedReceipt.year}</span>
+
+              <span className="text-slate-550">Metode Bayar</span>
+              <span className="text-slate-200 uppercase text-right">{selectedReceipt.method}</span>
+
+              <span className="text-slate-550">Tanggal / Waktu</span>
+              <span className="text-slate-200 text-right">{new Date(selectedReceipt.payment_date).toLocaleDateString('id-ID')}</span>
+            </div>
+
+            <div className="flex justify-between items-center bg-blue-600/10 border border-blue-500/20 p-3 rounded-lg">
+              <span className="font-semibold text-blue-400">TOTAL BAYAR</span>
+              <span className="font-bold text-slate-100 text-sm">Rp {parseFloat(selectedReceipt.amount).toLocaleString()}</span>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-850">
+              <button
+                onClick={() => window.print()}
+                className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 flex items-center gap-1.5 font-semibold"
+              >
+                <Printer size={14} /> Cetak Kuitansi
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}

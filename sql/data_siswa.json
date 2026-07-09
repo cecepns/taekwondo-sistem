@@ -1,0 +1,618 @@
+[
+  {
+    "no": 1,
+    "nama": "Lita janeeta koto",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 2,
+    "nama": "M Arfan sakhi Raffasya",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 3,
+    "nama": "Neala Wati Aristawidya",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 4,
+    "nama": "Raihana Azka",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 6,
+    "nama": "Alethea Kiera Makaylyn Yeabsera",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 7,
+    "nama": "BILQIS FARIZA A",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 8,
+    "nama": "RAFAIZAN AQIL ALFARIZKY",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 9,
+    "nama": "Arsal muhamad alfarizi",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 10,
+    "nama": "FABIO ABQARI MANGGALA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 12,
+    "nama": "Muhammad Ridho apiyandi",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 13,
+    "nama": "ALKALIFI RAKHSAN QIANDRA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 14,
+    "nama": "MUHAMAD KENNAN CELIO ABRISAM",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 15,
+    "nama": "ANDHARA KIRANA MAHESTRI",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 16,
+    "nama": "AZALLEA QAISARA RACHMAN",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 19,
+    "nama": "KAYSAN SATYA PRANAJA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 24,
+    "nama": "PUTRI FARHATAL HUSNA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 25,
+    "nama": "RIFAT",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 26,
+    "nama": "ADILA ALYA LATHIFA ASIKIN",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 27,
+    "nama": "AHMAD HAFIZH",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 28,
+    "nama": "ALBY HANAN MARHABAN",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 30,
+    "nama": "ARSY MUHAMMAD RAMDHAN",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 32,
+    "nama": "Embun Putri Mirandhis",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 35,
+    "nama": "FATHAN EL_BENZEMA SOFYANDRA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 36,
+    "nama": "FATHIN EL_KHEDIRA SOFYANIDA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 37,
+    "nama": "FATHIYA FATIMAH AZZAHRA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 38,
+    "nama": "GHASSAN AKMAL ATHALLAH",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 39,
+    "nama": "HAZQYA NUR KAMILLA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 40,
+    "nama": "Inara Naura Rahwani",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 41,
+    "nama": "Izwar Zahir Izzatulloh",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 44,
+    "nama": "Keysha Zahra",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 45,
+    "nama": "KIANDRA ANAIA PUTRI",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 46,
+    "nama": "LIVIA KHANSA ALODIA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 47,
+    "nama": "M ZAHRAN NAUFAL MUAMMAR HIDAYAT",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 48,
+    "nama": "MOKHAMAD RAMDHAN FIRDAUS",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 49,
+    "nama": "MUHAMMAD ALBY FACHRI",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 50,
+    "nama": "MUHAMMAD GHANI AL FARIZHI",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 52,
+    "nama": "NAKEYSHA STEVHANY",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 53,
+    "nama": "NASYWAQUEENA AZRA NUR FAIRUZ",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 54,
+    "nama": "NAURA AUNDY RIOSHART MAFIANIK",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 55,
+    "nama": "NAZRIEL CAHYANA PUTRA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 56,
+    "nama": "NUGIE ATHAYA PUTRA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 57,
+    "nama": "Radeagafi Rafasya Rokan",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 58,
+    "nama": "Rafly Muhammad Fadhil Gautama",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 59,
+    "nama": "RAGHA AKMAL ADZANA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 60,
+    "nama": "RAYYAN ATHAR RIOSHART MAFIANIK",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 61,
+    "nama": "RIFA SANDIA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 63,
+    "nama": "SHAZFA AZKADINA WIBOWO",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 64,
+    "nama": "ZENA FITALOKA PUTRI SETIAWAN",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 65,
+    "nama": "ALVARO AZKA PUTRA MARTYAS",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 66,
+    "nama": "M RENDI HARDIANTO",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 68,
+    "nama": "IBRA ABDI EL HAQ",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 70,
+    "nama": "MUHAMMAD GATHAN ALRISWAN",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 72,
+    "nama": "ARYA ADTYA SAPUTRA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 74,
+    "nama": "NURTANIO PUTRA MARTIYAS",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 75,
+    "nama": "AZRIL MUHAMMAD RADEVA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 76,
+    "nama": "Aladin",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 77,
+    "nama": "Chayra Agneta Guntara",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 79,
+    "nama": "Muhamad Nurilham",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": null,
+    "nama": "Zulfikar aprilyansyah",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 81,
+    "nama": "M. ARSYA. HA",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 82,
+    "nama": "Siti balqis azzahra",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 83,
+    "nama": "Ashilla husna putri",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 84,
+    "nama": "RAJNI NURSADANIYAH",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 85,
+    "nama": "Khalifa",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 86,
+    "nama": "M RIKO",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 87,
+    "nama": "Aisyah Hanum Hannaniya",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 88,
+    "nama": "Fayra marsha jinaan",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 89,
+    "nama": "FADYA SALAMATUL HAYA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 90,
+    "nama": "AFIKA JAZILA JALWA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 91,
+    "nama": "MIKHAYLA ALESHA ZAHRA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 92,
+    "nama": "MUHAMMAD ARSYA HAUFAL SIDIQ",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 93,
+    "nama": "MICHAIL YANDIKA ALDEN",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 94,
+    "nama": "AQILA SHIDQIYATUL HAQ FIRDAUS",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 95,
+    "nama": "HANNA SITI KHUMAIROH",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 96,
+    "nama": "ZITA NUR ANJANI",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 97,
+    "nama": "ZAHIRA NUR RIZKY",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 98,
+    "nama": "Nazwa zakiatulmutmainah",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 99,
+    "nama": "SOFA HUMAIRA ZAHROTUN NUR",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 100,
+    "nama": "Nayya faida azmi",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 101,
+    "nama": "SHAKI FATAR",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "CITAPEN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 102,
+    "nama": "Arrafi farzan Shakeel",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 103,
+    "nama": "AINIYAH ZAHRANA MARWA",
+    "jenis kelamin": "PEREMPUAN",
+    "DOJANG": "MI NAGARAKASIH 2",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": 105,
+    "nama": "MUHAMMAD KENZIE RAMADHANSYAH",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": null,
+    "nama": "Muhammad Mufassir Arifin",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": null,
+    "nama": "Bisma Nataprawira",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "DADAHA",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": null,
+    "nama": "Aufa",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": null,
+    "nama": "Emran adhitama faresta",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": "AKTIF"
+  },
+  {
+    "no": null,
+    "nama": "Emran adhitama faresta",
+    "jenis kelamin": "LAKI-LAKI",
+    "DOJANG": "PENGADILAN",
+    "STATUS": null
+  }
+]
