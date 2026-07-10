@@ -35,7 +35,7 @@ export default function Login({ settings }) {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 bg-slate-50">
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-slate-50 overflow-hidden">
 
       {/* Background Graphic elements */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
