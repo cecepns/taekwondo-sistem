@@ -115,8 +115,21 @@ const memoryDb = {
   championships: [
     { id: 1, name: 'Kejuaraan Nasional Taekwondo Indonesia 2026', location: 'Istora Senayan, Jakarta', date: '2026-08-10', organizer: 'PBTI', level: 'nasional', poster: '', description: 'Kejuaraan bergengsi tingkat nasional.' }
   ],
+  championship_classes: [
+    { id: 1, category: 'Kyorugi', age_group: 'Pracadet A', gender: 'Semua', class_name: 'Under 22kg', min_weight: 0.00, max_weight: 22.00 },
+    { id: 2, category: 'Kyorugi', age_group: 'Pracadet A', gender: 'Semua', class_name: 'Under 24kg', min_weight: 22.01, max_weight: 24.00 },
+    { id: 3, category: 'Kyorugi', age_group: 'Pracadet A', gender: 'Semua', class_name: 'Under 26kg', min_weight: 24.01, max_weight: 26.00 },
+    { id: 4, category: 'Kyorugi', age_group: 'Pracadet A', gender: 'Semua', class_name: 'Under 28kg', min_weight: 26.01, max_weight: 28.00 },
+    { id: 5, category: 'Kyorugi', age_group: 'Pracadet B', gender: 'Semua', class_name: 'Under 26kg', min_weight: 0.00, max_weight: 26.00 },
+    { id: 6, category: 'Kyorugi', age_group: 'Pracadet B', gender: 'Semua', class_name: 'Under 28kg', min_weight: 26.01, max_weight: 28.00 },
+    { id: 7, category: 'Kyorugi', age_group: 'Pracadet B', gender: 'Semua', class_name: 'Under 30kg', min_weight: 28.01, max_weight: 30.00 },
+    { id: 8, category: 'Kyorugi', age_group: 'Pracadet B', gender: 'Semua', class_name: 'Under 33kg', min_weight: 30.01, max_weight: 33.00 },
+    { id: 9, category: 'Kyorugi', age_group: 'Cadet', gender: 'L', class_name: 'Under 33kg', min_weight: 0.00, max_weight: 33.00 },
+    { id: 10, category: 'Kyorugi', age_group: 'Cadet', gender: 'L', class_name: 'Under 37kg', min_weight: 33.01, max_weight: 37.00 },
+    { id: 11, category: 'Kyorugi', age_group: 'Junior', gender: 'L', class_name: 'Under 45kg', min_weight: 0.00, max_weight: 45.00 }
+  ],
   championship_participants: [
-    { id: 1, championship_id: 1, member_id: 2, match_number: 'M-102', category: 'Kyorugi Under 45kg', belt_id: 4, weight: 42.00, target_medal: 'Emas', result: 'juara_1', medal: 'emas' }
+    { id: 1, championship_id: 1, member_id: 2, match_number: 'M-102', category: 'Kyorugi Under 45kg', class_id: 11, belt_id: 4, weight: 42.00, target_medal: 'Emas', result: 'juara_1', medal: 'emas', weigh_in_weight: null, weigh_in_status: 'unweighed' }
   ],
   physical_test_types: [
     { id: 1, name: 'Sprint 30m', category: 'Speed', description: 'Mengukur kecepatan lari jarak pendek 30 meter dalam satuan detik' },
@@ -1660,10 +1673,92 @@ app.delete('/api/championships/:id', authenticateToken, checkRole(['super_admin'
   res.json({ success: true, message: 'Championship deleted' });
 });
 
+// GET master classes
+app.get('/api/championships/classes', async (req, res) => {
+  let list = [];
+  if (useMemoryDb) {
+    list = memoryDb.championship_classes || [];
+  } else {
+    [list] = await pool.query('SELECT * FROM championship_classes ORDER BY category, age_group, class_name');
+  }
+  res.json({ success: true, data: list });
+});
+
+// POST master class
+app.post('/api/championships/classes', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const { category, age_group, gender, class_name, min_weight, max_weight } = req.body;
+  if (!category || !age_group || !class_name) {
+    return res.status(400).json({ success: false, message: 'Required fields missing' });
+  }
+
+  const data = {
+    category,
+    age_group,
+    gender: gender || 'Semua',
+    class_name,
+    min_weight: parseFloat(min_weight) || 0.00,
+    max_weight: parseFloat(max_weight) || 999.99
+  };
+
+  let newId = 0;
+  if (useMemoryDb) {
+    newId = (memoryDb.championship_classes || []).length + 1;
+    if (!memoryDb.championship_classes) memoryDb.championship_classes = [];
+    memoryDb.championship_classes.push({ id: newId, ...data });
+  } else {
+    const [result] = await pool.query(`
+      INSERT INTO championship_classes (category, age_group, gender, class_name, min_weight, max_weight)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [data.category, data.age_group, data.gender, data.class_name, data.min_weight, data.max_weight]);
+    newId = result.insertId;
+  }
+
+  res.status(201).json({ success: true, message: 'Class created successfully', id: newId });
+});
+
+// PUT master class
+app.put('/api/championships/classes/:id', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { category, age_group, gender, class_name, min_weight, max_weight } = req.body;
+
+  if (useMemoryDb) {
+    const idx = (memoryDb.championship_classes || []).findIndex(c => c.id === id);
+    if (idx === -1) return res.status(404).json({ success: false, message: 'Class not found' });
+    memoryDb.championship_classes[idx] = {
+      ...memoryDb.championship_classes[idx],
+      category: category || memoryDb.championship_classes[idx].category,
+      age_group: age_group || memoryDb.championship_classes[idx].age_group,
+      gender: gender || memoryDb.championship_classes[idx].gender,
+      class_name: class_name || memoryDb.championship_classes[idx].class_name,
+      min_weight: min_weight !== undefined ? parseFloat(min_weight) : memoryDb.championship_classes[idx].min_weight,
+      max_weight: max_weight !== undefined ? parseFloat(max_weight) : memoryDb.championship_classes[idx].max_weight
+    };
+  } else {
+    await pool.query(`
+      UPDATE championship_classes 
+      SET category = ?, age_group = ?, gender = ?, class_name = ?, min_weight = ?, max_weight = ?
+      WHERE id = ?
+    `, [category, age_group, gender, class_name, parseFloat(min_weight), parseFloat(max_weight), id]);
+  }
+
+  res.json({ success: true, message: 'Class updated successfully' });
+});
+
+// DELETE master class
+app.delete('/api/championships/classes/:id', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (useMemoryDb) {
+    memoryDb.championship_classes = (memoryDb.championship_classes || []).filter(c => c.id !== id);
+  } else {
+    await pool.query('DELETE FROM championship_classes WHERE id = ?', [id]);
+  }
+  res.json({ success: true, message: 'Class deleted successfully' });
+});
+
 // Validate member category weight
 app.post('/api/championships/validate-weight', authenticateToken, async (req, res) => {
-  const { member_id, category } = req.body; // Category name e.g. "Under 25kg" or "Under 35kg"
-  if (!member_id || !category) return res.status(400).json({ success: false, message: 'Required fields missing' });
+  const { member_id, class_id, category } = req.body;
+  if (!member_id) return res.status(400).json({ success: false, message: 'member_id is required' });
 
   let member = null;
   if (useMemoryDb) {
@@ -1675,21 +1770,56 @@ app.post('/api/championships/validate-weight', authenticateToken, async (req, re
 
   if (!member) return res.status(404).json({ success: false, message: 'Member not found' });
 
-  // Parse weight constraint from category string e.g. "Under 25kg" or "U-25" or "25"
-  const regex = /under\s*(\d+)/i;
-  const match = category.match(regex);
-  if (match) {
-    const limit = parseFloat(match[1]);
-    const mWeight = parseFloat(member.weight);
-    if (mWeight > limit) {
-      const diff = (mWeight - limit).toFixed(1);
-      return res.json({
-        success: true,
-        valid: false,
-        warning: `Berat badan melebihi batas kategori. Selisih +${diff}kg`,
-        limit,
-        weight: mWeight
-      });
+  const mWeight = parseFloat(member.weight);
+
+  if (class_id) {
+    let tClass = null;
+    if (useMemoryDb) {
+      tClass = memoryDb.championship_classes.find(c => c.id === parseInt(class_id));
+    } else {
+      const [rows] = await pool.query('SELECT * FROM championship_classes WHERE id = ?', [class_id]);
+      if (rows.length > 0) tClass = rows[0];
+    }
+
+    if (tClass) {
+      const minW = parseFloat(tClass.min_weight || 0.00);
+      const maxW = parseFloat(tClass.max_weight || 999.99);
+
+      if (mWeight > maxW) {
+        const diff = (mWeight - maxW).toFixed(1);
+        return res.json({
+          success: true,
+          valid: false,
+          warning: `Berat badan melebihi batas kategori (Maks: ${maxW} kg). Selisih +${diff} kg`,
+          limit: maxW,
+          weight: mWeight
+        });
+      } else if (mWeight < minW) {
+        const diff = (minW - mWeight).toFixed(1);
+        return res.json({
+          success: true,
+          valid: false,
+          warning: `Berat badan kurang dari batas kategori (Min: ${minW} kg). Selisih -${diff} kg`,
+          limit: minW,
+          weight: mWeight
+        });
+      }
+    }
+  } else if (category) {
+    const regex = /under\s*(\d+)/i;
+    const match = category.match(regex);
+    if (match) {
+      const limit = parseFloat(match[1]);
+      if (mWeight > limit) {
+        const diff = (mWeight - limit).toFixed(1);
+        return res.json({
+          success: true,
+          valid: false,
+          warning: `Berat badan melebihi batas kategori. Selisih +${diff}kg`,
+          limit,
+          weight: mWeight
+        });
+      }
     }
   }
 
@@ -1697,18 +1827,21 @@ app.post('/api/championships/validate-weight', authenticateToken, async (req, re
 });
 
 app.post('/api/championships/participants', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
-  const { championship_id, member_id, match_number, category, belt_id, weight, target_medal } = req.body;
+  const { championship_id, member_id, match_number, category, class_id, belt_id, weight, target_medal } = req.body;
 
   const data = {
     championship_id: parseInt(championship_id),
     member_id: parseInt(member_id),
     match_number: match_number || '',
     category,
+    class_id: class_id ? parseInt(class_id) : null,
     belt_id: belt_id ? parseInt(belt_id) : null,
     weight: parseFloat(weight) || 0.0,
     target_medal: target_medal || '',
     result: null,
-    medal: 'none'
+    medal: 'none',
+    weigh_in_weight: null,
+    weigh_in_status: 'unweighed'
   };
 
   if (useMemoryDb) {
@@ -1716,10 +1849,10 @@ app.post('/api/championships/participants', authenticateToken, checkRole(['super
     memoryDb.championship_participants.push(data);
   } else {
     await pool.query(`
-      INSERT INTO championship_participants (championship_id, member_id, match_number, category, belt_id, weight, target_medal)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO championship_participants (championship_id, member_id, match_number, category, class_id, belt_id, weight, target_medal, weigh_in_weight, weigh_in_status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, 'unweighed')
     `, [
-      data.championship_id, data.member_id, data.match_number, data.category, data.belt_id, data.weight, data.target_medal
+      data.championship_id, data.member_id, data.match_number, data.category, data.class_id, data.belt_id, data.weight, data.target_medal
     ]);
   }
 
@@ -1732,14 +1865,29 @@ app.get('/api/championships/participants', async (req, res) => {
     list = memoryDb.championship_participants.map(p => {
       const m = memoryDb.members.find(member => member.id === p.member_id);
       const c = memoryDb.championships.find(ch => ch.id === p.championship_id);
-      return { ...p, member_name: m ? m.name : 'Unknown', championship_name: c ? c.name : 'Unknown' };
+      const cc = memoryDb.championship_classes ? memoryDb.championship_classes.find(cls => cls.id === p.class_id) : null;
+      return { 
+        ...p, 
+        member_name: m ? m.name : 'Unknown', 
+        championship_name: c ? c.name : 'Unknown',
+        class_category: cc ? cc.category : '',
+        class_age_group: cc ? cc.age_group : '',
+        class_gender: cc ? cc.gender : '',
+        class_class_name: cc ? cc.class_name : '',
+        class_min_weight: cc ? cc.min_weight : 0.00,
+        class_max_weight: cc ? cc.max_weight : 999.99
+      };
     });
   } else {
     [list] = await pool.query(`
-      SELECT cp.*, m.name as member_name, c.name as championship_name 
+      SELECT cp.*, m.name as member_name, c.name as championship_name,
+             cc.category as class_category, cc.age_group as class_age_group,
+             cc.gender as class_gender, cc.class_name as class_class_name,
+             cc.min_weight as class_min_weight, cc.max_weight as class_max_weight
       FROM championship_participants cp
       JOIN members m ON cp.member_id = m.id
       JOIN championships c ON cp.championship_id = c.id
+      LEFT JOIN championship_classes cc ON cp.class_id = cc.id
     `);
   }
   res.json({ success: true, data: list });
@@ -1747,7 +1895,7 @@ app.get('/api/championships/participants', async (req, res) => {
 
 app.put('/api/championships/participants/:id', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
   const id = parseInt(req.params.id);
-  const { championship_id, member_id, match_number, category, belt_id, weight, target_medal, medal } = req.body;
+  const { championship_id, member_id, match_number, category, class_id, belt_id, weight, target_medal, medal } = req.body;
 
   if (useMemoryDb) {
     const idx = memoryDb.championship_participants.findIndex(p => p.id === id);
@@ -1758,7 +1906,8 @@ app.put('/api/championships/participants/:id', authenticateToken, checkRole(['su
       member_id: member_id !== undefined ? parseInt(member_id) : memoryDb.championship_participants[idx].member_id,
       match_number: match_number !== undefined ? match_number : memoryDb.championship_participants[idx].match_number,
       category: category !== undefined ? category : memoryDb.championship_participants[idx].category,
-      belt_id: belt_id !== undefined ? parseInt(belt_id) : memoryDb.championship_participants[idx].belt_id,
+      class_id: class_id !== undefined ? (class_id ? parseInt(class_id) : null) : memoryDb.championship_participants[idx].class_id,
+      belt_id: belt_id !== undefined ? (belt_id ? parseInt(belt_id) : null) : memoryDb.championship_participants[idx].belt_id,
       weight: weight !== undefined ? parseFloat(weight) : memoryDb.championship_participants[idx].weight,
       target_medal: target_medal !== undefined ? target_medal : memoryDb.championship_participants[idx].target_medal,
       medal: medal !== undefined ? medal : memoryDb.championship_participants[idx].medal
@@ -1766,9 +1915,9 @@ app.put('/api/championships/participants/:id', authenticateToken, checkRole(['su
   } else {
     await pool.query(`
       UPDATE championship_participants 
-      SET championship_id = ?, member_id = ?, match_number = ?, category = ?, belt_id = ?, weight = ?, target_medal = ?, medal = ?
+      SET championship_id = ?, member_id = ?, match_number = ?, category = ?, class_id = ?, belt_id = ?, weight = ?, target_medal = ?, medal = ?
       WHERE id = ?
-    `, [parseInt(championship_id), parseInt(member_id), match_number || '', category, parseInt(belt_id), parseFloat(weight), target_medal, medal || null, id]);
+    `, [parseInt(championship_id), parseInt(member_id), match_number || '', category, class_id ? parseInt(class_id) : null, belt_id ? parseInt(belt_id) : null, parseFloat(weight), target_medal, medal || null, id]);
   }
   res.json({ success: true, message: 'Participant updated' });
 });
@@ -1781,6 +1930,74 @@ app.delete('/api/championships/participants/:id', authenticateToken, checkRole([
     await pool.query('DELETE FROM championship_participants WHERE id = ?', [id]);
   }
   res.json({ success: true, message: 'Participant deleted' });
+});
+
+// Record weigh-in for participant
+app.post('/api/championships/participants/:id/weigh-in', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { weigh_in_weight } = req.body;
+
+  if (weigh_in_weight === undefined || weigh_in_weight === '') {
+    return res.status(400).json({ success: false, message: 'weigh_in_weight is required' });
+  }
+
+  const actWeight = parseFloat(weigh_in_weight);
+
+  let participant = null;
+  let tClass = null;
+
+  if (useMemoryDb) {
+    participant = memoryDb.championship_participants.find(p => p.id === id);
+    if (participant && participant.class_id) {
+      tClass = memoryDb.championship_classes.find(c => c.id === participant.class_id);
+    }
+  } else {
+    const [rows] = await pool.query('SELECT * FROM championship_participants WHERE id = ?', [id]);
+    if (rows.length > 0) {
+      participant = rows[0];
+      if (participant.class_id) {
+        const [cRows] = await pool.query('SELECT * FROM championship_classes WHERE id = ?', [participant.class_id]);
+        if (cRows.length > 0) tClass = cRows[0];
+      }
+    }
+  }
+
+  if (!participant) {
+    return res.status(404).json({ success: false, message: 'Participant not found' });
+  }
+
+  let status = 'passed';
+  if (tClass) {
+    const minW = parseFloat(tClass.min_weight || 0.00);
+    const maxW = parseFloat(tClass.max_weight || 999.99);
+
+    if (actWeight > maxW) {
+      status = 'overweight';
+    } else if (actWeight < minW) {
+      status = 'underweight';
+    }
+  }
+
+  if (useMemoryDb) {
+    const idx = memoryDb.championship_participants.findIndex(p => p.id === id);
+    memoryDb.championship_participants[idx].weigh_in_weight = actWeight;
+    memoryDb.championship_participants[idx].weigh_in_status = status;
+  } else {
+    await pool.query(`
+      UPDATE championship_participants 
+      SET weigh_in_weight = ?, weigh_in_status = ? 
+      WHERE id = ?
+    `, [actWeight, status, id]);
+  }
+
+  res.json({ 
+    success: true, 
+    message: 'Data timbang berhasil dicatat!', 
+    data: { 
+      weigh_in_weight: actWeight, 
+      weigh_in_status: status 
+    } 
+  });
 });
 
 

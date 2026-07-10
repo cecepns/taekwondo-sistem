@@ -66,6 +66,9 @@ export const API_ENDPOINTS = {
     PARTICIPANTS_LIST: "/championships/participants",
     PARTICIPANTS_CREATE: "/championships/participants",
     PARTICIPANTS_DETAIL: (id) => `/championships/participants/${id}`,
+    CLASSES_LIST: "/championships/classes",
+    CLASSES_DETAIL: (id) => `/championships/classes/${id}`,
+    WEIGH_IN: (id) => `/championships/participants/${id}/weigh-in`
   },
   REPORTS: {
     HONOR: "/reports/honor",
