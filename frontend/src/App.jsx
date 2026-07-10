@@ -99,7 +99,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/members" element={<Members />} />
           <Route path="/members/:id" element={<MemberDetail />} />
-          <Route path="/dues" element={<Dues user={user} />} />
+          <Route path="/dues" element={<Dues user={user} settings={settings} />} />
           <Route path="/coaches" element={<Coaches />} />
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/programs" element={<TrainingPrograms />} />

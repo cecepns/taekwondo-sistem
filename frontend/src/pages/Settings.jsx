@@ -15,7 +15,8 @@ export default function Settings({ settings, onSettingsChange }) {
     whatsapp: '',
     email: '',
     main_color: '#3b82f6',
-    footer_text: ''
+    footer_text: '',
+    default_dues_amount: 85000
   });
 
   const [restoreFile, setRestoreFile] = useState(null);
@@ -30,7 +31,8 @@ export default function Settings({ settings, onSettingsChange }) {
         whatsapp: settings.whatsapp || '',
         email: settings.email || '',
         main_color: settings.main_color || '#3b82f6',
-        footer_text: settings.footer_text || ''
+        footer_text: settings.footer_text || '',
+        default_dues_amount: settings.default_dues_amount || 85000
       });
     }
   }, [settings]);
@@ -147,6 +149,15 @@ export default function Settings({ settings, onSettingsChange }) {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-400">Nominal Iuran Default (Rp)</label>
+                <input
+                  type="number"
+                  value={formData.default_dues_amount}
+                  onChange={(e) => setFormData(prev => ({ ...prev, default_dues_amount: parseInt(e.target.value) || 0 }))}
                   className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
                 />
               </div>

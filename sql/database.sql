@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS `app_settings` (
   `dashboard_banner` VARCHAR(255) DEFAULT '',
   `main_color` VARCHAR(50) DEFAULT '#3b82f6', -- Tailwind blue-500
   `footer_text` VARCHAR(255) DEFAULT '© 2026 Taekwondo Management System. All Rights Reserved.',
+  `default_dues_amount` DECIMAL(12,2) DEFAULT 85000.00,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -150,8 +151,28 @@ CREATE TABLE IF NOT EXISTS `training_programs` (
   `duration` VARCHAR(50) DEFAULT '',
   `image` VARCHAR(255) DEFAULT '',
   `video` VARCHAR(255) DEFAULT '',
-  `is_active` BOOLEAN DEFAULT TRUE,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 11b. Training Sessions Table
+CREATE TABLE IF NOT EXISTS `training_sessions` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `program_name` VARCHAR(150) NOT NULL,
+  `date` DATE NOT NULL,
+  `total_duration` INT DEFAULT 0,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 11c. Training Session Items Table
+CREATE TABLE IF NOT EXISTS `training_session_items` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `session_id` INT NOT NULL,
+  `program_id` INT,
+  `name` VARCHAR(150) NOT NULL,
+  `description` TEXT,
+  `duration` INT NOT NULL DEFAULT 0,
+  `order_index` INT DEFAULT 0,
+  FOREIGN KEY (`session_id`) REFERENCES `training_sessions`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`program_id`) REFERENCES `training_programs`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 12. Schedules Table (Jadwal Latihan)
@@ -255,8 +276,8 @@ CREATE TABLE IF NOT EXISTS `activity_logs` (
 -- ========================================================
 
 -- Seed App Settings
-INSERT INTO `app_settings` (`id`, `app_name`, `dojang_name`, `address`, `whatsapp`, `email`, `footer_text`)
-VALUES (1, 'Taekwondo Club Management', 'Dojang Taekwondo Indonesia', 'Jl. Sudirman No. 45, Jakarta Selatan', '081234567890', 'dojang@taekwondo.id', '© 2026 Taekwondo Management System. All Rights Reserved.');
+INSERT INTO `app_settings` (`id`, `app_name`, `dojang_name`, `address`, `whatsapp`, `email`, `footer_text`, `default_dues_amount`)
+VALUES (1, 'Taekwondo Club Management', 'Dojang Taekwondo Indonesia', 'Jl. Sudirman No. 45, Jakarta Selatan', '081234567890', 'dojang@taekwondo.id', '© 2026 Taekwondo Management System. All Rights Reserved.', 85000.00);
 
 -- Seed Users
 -- The password hash here is bcrypt for 'admin123'

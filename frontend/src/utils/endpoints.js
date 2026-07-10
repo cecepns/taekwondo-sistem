@@ -29,6 +29,12 @@ export const API_ENDPOINTS = {
     LIST: "/dues",
     PAY: "/dues/pay",
     DETAIL: (id) => `/dues/${id}`,
+    UNPAID: "/dues/unpaid",
+  },
+  SESSIONS: {
+    LIST: "/sessions",
+    CREATE: "/sessions",
+    DETAIL: (id) => `/sessions/${id}`,
   },
   COACHES: {
     LIST: "/coaches",

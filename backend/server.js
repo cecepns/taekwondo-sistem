@@ -57,7 +57,8 @@ const memoryDb = {
       dashboard_bg: '',
       dashboard_banner: '',
       main_color: '#3b82f6',
-      footer_text: '© 2026 Taekwondo Management System. All Rights Reserved.'
+      footer_text: '© 2026 Taekwondo Management System. All Rights Reserved.',
+      default_dues_amount: 85000.00
     }
   ],
   users: [
@@ -102,10 +103,12 @@ const memoryDb = {
   coach_attendances: [],
   member_attendances: [],
   dues: [],
+  training_sessions: [],
+  training_session_items: [],
   training_programs: [
     { id: 1, name: 'Latihan Tendangan (Kicking)', category: 'Tendangan', description: 'Fokus pada teknik tendangan dasar dan cepat seperti Ap Chagi, Dollyo Chagi, dan Dwi Chagi.', target: 'Kecepatan dan presisi tendangan', duration: '60 menit', image: '', video: '', is_active: 1 },
     { id: 2, name: 'Poomsae Taegeuk 1-3', category: 'Poomsae', description: 'Latihan jurus dasar Taegeuk Il Jang, Ee Jang, dan Sam Jang.', target: 'Akurasi gerakan dan kekuatan kuda-kuda', duration: '45 menit', is_active: 1 },
-    { id: 3, name: 'Latihan Kelincahan Kaki (Footwork)', category: 'Kecepatan', description: 'Latihan footwork sparring menggunakan ladder drill dan cone.', target: 'Kelincahan bergerak saat sparring', duration: '30 menit', is_active: 1 },
+    { id: 3, name: 'Latihan Kelincahan Kaki (Footwork)', category: 'Kecepatan', description: 'Latihan footwork sparring menggunakan ladder drill and cone.', target: 'Kelincahan bergerak saat sparring', duration: '30 menit', is_active: 1 },
     { id: 4, name: 'Cardio & Endurance Circuit', category: 'Stamina', description: 'Latihan sirkuit fisik: pushup, situp, jumping jack, shuttle run.', target: 'Daya tahan fisik bertanding', duration: '45 menit', is_active: 1 }
   ],
   schedules: [],
@@ -148,6 +151,41 @@ async function initDb() {
     // Test connection
     const conn = await pool.getConnection();
     console.log('Successfully connected to MySQL database.');
+    
+    // Add default_dues_amount to app_settings if not exists
+    try {
+      await conn.query('ALTER TABLE app_settings ADD COLUMN default_dues_amount DECIMAL(12,2) DEFAULT 85000.00');
+      console.log('Schema migration: default_dues_amount column verified/added in app_settings.');
+    } catch (e) {
+      // Column may already exist
+    }
+
+    // Create training_sessions if not exists
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS training_sessions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        program_name VARCHAR(150) NOT NULL,
+        date DATE NOT NULL,
+        total_duration INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+
+    // Create training_session_items if not exists
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS training_session_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        session_id INT NOT NULL,
+        program_id INT,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        duration INT NOT NULL DEFAULT 0,
+        order_index INT DEFAULT 0,
+        FOREIGN KEY (session_id) REFERENCES training_sessions(id) ON DELETE CASCADE,
+        FOREIGN KEY (program_id) REFERENCES training_programs(id) ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    `);
+
     conn.release();
   } catch (err) {
     console.warn('MySQL connection failed. Falling back to in-memory database simulation.', err.message);
@@ -492,7 +530,7 @@ app.put('/api/settings', authenticateToken, checkRole(['super_admin']), upload.f
   { name: 'dashboard_bg', maxCount: 1 },
   { name: 'dashboard_banner', maxCount: 1 }
 ]), async (req, res) => {
-  const { app_name, dojang_name, address, whatsapp, email, main_color, footer_text } = req.body;
+  const { app_name, dojang_name, address, whatsapp, email, main_color, footer_text, default_dues_amount } = req.body;
   
   let currentSettings = useMemoryDb 
     ? memoryDb.app_settings[0] 
@@ -506,6 +544,7 @@ app.put('/api/settings', authenticateToken, checkRole(['super_admin']), upload.f
     email: email || currentSettings.email,
     main_color: main_color || currentSettings.main_color,
     footer_text: footer_text || currentSettings.footer_text,
+    default_dues_amount: default_dues_amount !== undefined ? parseFloat(default_dues_amount) : currentSettings.default_dues_amount,
     logo: req.files && req.files.logo ? `/uploads/${req.files.logo[0].filename}` : currentSettings.logo,
     favicon: req.files && req.files.favicon ? `/uploads/${req.files.favicon[0].filename}` : currentSettings.favicon,
     login_bg: req.files && req.files.login_bg ? `/uploads/${req.files.login_bg[0].filename}` : currentSettings.login_bg,
@@ -519,12 +558,12 @@ app.put('/api/settings', authenticateToken, checkRole(['super_admin']), upload.f
     await pool.query(
       `UPDATE app_settings SET 
         app_name = ?, dojang_name = ?, address = ?, whatsapp = ?, email = ?, 
-        main_color = ?, footer_text = ?, logo = ?, favicon = ?, 
+        main_color = ?, footer_text = ?, default_dues_amount = ?, logo = ?, favicon = ?, 
         login_bg = ?, dashboard_bg = ?, dashboard_banner = ? 
       WHERE id = 1`,
       [
         updateFields.app_name, updateFields.dojang_name, updateFields.address, updateFields.whatsapp, updateFields.email,
-        updateFields.main_color, updateFields.footer_text, updateFields.logo, updateFields.favicon,
+        updateFields.main_color, updateFields.footer_text, updateFields.default_dues_amount, updateFields.logo, updateFields.favicon,
         updateFields.login_bg, updateFields.dashboard_bg, updateFields.dashboard_banner
       ]
     );
@@ -1792,6 +1831,237 @@ app.post('/api/restore/json', authenticateToken, checkRole(['super_admin']), upl
     res.json({ success: true, message: 'Database restored successfully from JSON' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Restore failed: ' + err.message });
+  }
+});
+
+
+// NEW ENDPOINTS: DUES BILLING & TRAINING SESSIONS
+
+// 1. Get unpaid dues billing report
+app.get('/api/dues/unpaid', authenticateToken, async (req, res) => {
+  try {
+    let defaultAmount = 85000;
+    if (useMemoryDb) {
+      const settings = memoryDb.app_settings[0];
+      if (settings && settings.default_dues_amount !== undefined) {
+        defaultAmount = parseFloat(settings.default_dues_amount);
+      }
+    } else {
+      const [settingsRows] = await pool.query('SELECT default_dues_amount FROM app_settings WHERE id = 1');
+      if (settingsRows.length > 0 && settingsRows[0].default_dues_amount !== null) {
+        defaultAmount = parseFloat(settingsRows[0].default_dues_amount);
+      }
+    }
+
+    let allMembers = [];
+    if (useMemoryDb) {
+      allMembers = memoryDb.members.filter(m => m.status === 'aktif');
+    } else {
+      [allMembers] = await pool.query('SELECT id, name, member_number, joined_date, status FROM members WHERE status = "aktif"');
+    }
+
+    let paidDues = [];
+    if (useMemoryDb) {
+      paidDues = memoryDb.dues.filter(d => d.status === 'sudah_bayar');
+    } else {
+      [paidDues] = await pool.query('SELECT member_id, month, year, amount FROM dues WHERE status = "sudah_bayar"');
+    }
+
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // 1-12
+
+    const result = allMembers.map(member => {
+      const joined = member.joined_date ? new Date(member.joined_date) : new Date(2026, 0, 1);
+      const startYear = joined.getFullYear();
+      const startMonth = joined.getMonth() + 1;
+
+      const unpaid = [];
+      let y = startYear;
+      let m = startMonth;
+
+      while (y < currentYear || (y === currentYear && m <= currentMonth)) {
+        const isPaid = paidDues.some(d => d.member_id === member.id && d.month === m && d.year === y);
+        if (!isPaid) {
+          unpaid.push({ month: m, year: y });
+        }
+        m++;
+        if (m > 12) {
+          m = 1;
+          y++;
+        }
+      }
+
+      return {
+        member_id: member.id,
+        member_name: member.name,
+        member_number: member.member_number,
+        unpaid_months: unpaid,
+        total_unpaid: unpaid.length,
+        total_bill: unpaid.length * defaultAmount
+      };
+    });
+
+    const unpaidMembers = result.filter(r => r.total_unpaid > 0);
+
+    res.json({
+      success: true,
+      data: unpaidMembers,
+      default_dues_amount: defaultAmount
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error calculating unpaid dues' });
+  }
+});
+
+// 2. GET all sessions
+app.get('/api/sessions', authenticateToken, async (req, res) => {
+  try {
+    let sessions = [];
+    if (useMemoryDb) {
+      sessions = memoryDb.training_sessions.map(s => {
+        const items = memoryDb.training_session_items.filter(item => item.session_id === s.id);
+        return { ...s, items: items.sort((a, b) => a.order_index - b.order_index) };
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    } else {
+      [sessions] = await pool.query('SELECT * FROM training_sessions ORDER BY date DESC, id DESC');
+      for (const s of sessions) {
+        const [items] = await pool.query('SELECT * FROM training_session_items WHERE session_id = ? ORDER BY order_index ASC', [s.id]);
+        s.items = items;
+      }
+    }
+    res.json({ success: true, data: sessions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error fetching sessions' });
+  }
+});
+
+// 3. POST create session
+app.post('/api/sessions', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  try {
+    const { program_name, date, items } = req.body;
+    if (!program_name || !date) {
+      return res.status(400).json({ success: false, message: 'Program name and date are required' });
+    }
+
+    const parsedItems = Array.isArray(items) ? items : JSON.parse(items || '[]');
+    const totalDuration = parsedItems.reduce((acc, item) => acc + parseInt(item.duration || 0), 0);
+
+    if (useMemoryDb) {
+      const sessionId = memoryDb.training_sessions.length + 1;
+      const newSession = {
+        id: sessionId,
+        program_name,
+        date,
+        total_duration: totalDuration,
+        created_at: new Date().toISOString()
+      };
+      memoryDb.training_sessions.push(newSession);
+      parsedItems.forEach((item, idx) => {
+        memoryDb.training_session_items.push({
+          id: memoryDb.training_session_items.length + 1,
+          session_id: sessionId,
+          program_id: item.program_id || null,
+          name: item.name,
+          description: item.description || '',
+          duration: parseInt(item.duration || 0),
+          order_index: idx
+        });
+      });
+      res.json({ success: true, message: 'Session created successfully', data: { ...newSession, items: parsedItems } });
+    } else {
+      const [resSession] = await pool.query(
+        'INSERT INTO training_sessions (program_name, date, total_duration) VALUES (?, ?, ?)',
+        [program_name, date, totalDuration]
+      );
+      const sessionId = resSession.insertId;
+      for (let i = 0; i < parsedItems.length; i++) {
+        const item = parsedItems[i];
+        await pool.query(
+          'INSERT INTO training_session_items (session_id, program_id, name, description, duration, order_index) VALUES (?, ?, ?, ?, ?, ?)',
+          [sessionId, item.program_id || null, item.name, item.description || '', parseInt(item.duration || 0), i]
+        );
+      }
+      res.json({ success: true, message: 'Session created successfully', data: { id: sessionId, program_name, date, total_duration: totalDuration } });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error creating session' });
+  }
+});
+
+// 4. PUT update session
+app.put('/api/sessions/:id', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { program_name, date, items } = req.body;
+    if (!program_name || !date) {
+      return res.status(400).json({ success: false, message: 'Program name and date are required' });
+    }
+
+    const parsedItems = Array.isArray(items) ? items : JSON.parse(items || '[]');
+    const totalDuration = parsedItems.reduce((acc, item) => acc + parseInt(item.duration || 0), 0);
+
+    if (useMemoryDb) {
+      const idx = memoryDb.training_sessions.findIndex(s => s.id === id);
+      if (idx === -1) {
+        return res.status(404).json({ success: false, message: 'Session not found' });
+      }
+      memoryDb.training_sessions[idx] = { ...memoryDb.training_sessions[idx], program_name, date, total_duration: totalDuration };
+      memoryDb.training_session_items = memoryDb.training_session_items.filter(item => item.session_id !== id);
+      parsedItems.forEach((item, i) => {
+        memoryDb.training_session_items.push({
+          id: memoryDb.training_session_items.length + 1,
+          session_id: id,
+          program_id: item.program_id || null,
+          name: item.name,
+          description: item.description || '',
+          duration: parseInt(item.duration || 0),
+          order_index: i
+        });
+      });
+      res.json({ success: true, message: 'Session updated successfully' });
+    } else {
+      const [resCheck] = await pool.query('SELECT id FROM training_sessions WHERE id = ?', [id]);
+      if (resCheck.length === 0) {
+        return res.status(404).json({ success: false, message: 'Session not found' });
+      }
+      await pool.query(
+        'UPDATE training_sessions SET program_name = ?, date = ?, total_duration = ? WHERE id = ?',
+        [program_name, date, totalDuration, id]
+      );
+      await pool.query('DELETE FROM training_session_items WHERE session_id = ?', [id]);
+      for (let i = 0; i < parsedItems.length; i++) {
+        const item = parsedItems[i];
+        await pool.query(
+          'INSERT INTO training_session_items (session_id, program_id, name, description, duration, order_index) VALUES (?, ?, ?, ?, ?, ?)',
+          [id, item.program_id || null, item.name, item.description || '', parseInt(item.duration || 0), i]
+        );
+      }
+      res.json({ success: true, message: 'Session updated successfully' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error updating session' });
+  }
+});
+
+// 5. DELETE session
+app.delete('/api/sessions/:id', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (useMemoryDb) {
+      memoryDb.training_sessions = memoryDb.training_sessions.filter(s => s.id !== id);
+      memoryDb.training_session_items = memoryDb.training_session_items.filter(item => item.session_id !== id);
+    } else {
+      await pool.query('DELETE FROM training_sessions WHERE id = ?', [id]);
+    }
+    res.json({ success: true, message: 'Session deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error deleting session' });
   }
 });
 

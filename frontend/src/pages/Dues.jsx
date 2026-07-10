@@ -4,16 +4,20 @@ import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
+import AsyncSelect from 'react-select/async';
 import { 
-  Search, Plus, Eye, Printer, BadgeCent, FileText, CheckCircle, Clock, Trash2, Calendar, Edit,
-  FileSpreadsheet
+  Search, Plus, Eye, Printer, FileText, Trash2, Calendar, Edit,
+  FileSpreadsheet, HelpCircle, CheckCircle, AlertTriangle
 } from 'lucide-react';
 
-export default function Dues({ user }) {
+export default function Dues({ user, settings }) {
   const [dues, setDues] = useState([]);
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingDue, setEditingDue] = useState(null);
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState('list'); // 'list' or 'unpaid'
 
   // Filters & Pagination
   const [search, setSearch] = useState('');
@@ -23,6 +27,11 @@ export default function Dues({ user }) {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+
+  // Unpaid Tab State
+  const [unpaidDues, setUnpaidDues] = useState([]);
+  const [isUnpaidLoading, setIsUnpaidLoading] = useState(false);
+  const [unpaidSearch, setUnpaidSearch] = useState('');
 
   // Modal payment state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,12 +54,10 @@ export default function Dues({ user }) {
     try {
       const res = await request.get(API_ENDPOINTS.DUES.LIST);
       if (res.success) {
-        // filter client-side search since we have small sandbox dataset
         let filtered = res.data || [];
         if (search) {
           filtered = filtered.filter(d => 
-            d.member_name.toLowerCase().includes(search.toLowerCase()) ||
-            d.member_number.toLowerCase().includes(search.toLowerCase())
+            d.member_name.toLowerCase().includes(search.toLowerCase())
           );
         }
 
@@ -73,178 +80,55 @@ export default function Dues({ user }) {
     }
   };
 
-  const downloadDuesExcel = () => {
-    const getMonthNameLocal = (mNum) => {
-      const names = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-      return names[mNum - 1] || '';
-    };
-
-    const runDownload = async () => {
-      try {
-        const res = await request.get(API_ENDPOINTS.DUES.LIST);
-        if (res.success) {
-          let list = res.data || [];
-          if (search) {
-            list = list.filter(d => 
-              d.member_name.toLowerCase().includes(search.toLowerCase()) ||
-              d.member_number.toLowerCase().includes(search.toLowerCase())
-            );
-          }
-          if (filterMonth) {
-            list = list.filter(d => parseInt(d.month) === parseInt(filterMonth));
-          }
-          if (filterYear) {
-            list = list.filter(d => parseInt(d.year) === parseInt(filterYear));
-          }
-
-          const headers = ['No', 'Nama Anggota', 'No Anggota', 'Iuran Bulan', 'Tahun', 'Tanggal Bayar', 'Nominal', 'Metode Bayar', 'Status'];
-          const rows = list.map((d, index) => [
-            index + 1,
-            d.member_name,
-            d.member_number,
-            getMonthNameLocal(d.month),
-            d.year,
-            new Date(d.payment_date).toLocaleDateString('id-ID'),
-            `Rp ${parseFloat(d.amount).toLocaleString()}`,
-            d.method.toUpperCase(),
-            d.status.toUpperCase()
-          ]);
-
-          const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.setAttribute("href", url);
-          link.setAttribute("download", `Laporan_Iuran_${filterMonth ? `Bulan_${filterMonth}` : 'Semua_Bulan'}_${filterYear}.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error('Gagal mendownload excel');
+  const fetchUnpaidDues = async () => {
+    setIsUnpaidLoading(true);
+    try {
+      const res = await request.get(API_ENDPOINTS.DUES.UNPAID);
+      if (res.success) {
+        setUnpaidDues(res.data || []);
       }
-    };
-    runDownload();
-  };
-
-  const downloadDuesPdf = () => {
-    const getMonthNameLocal = (mNum) => {
-      const names = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-      return names[mNum - 1] || '';
-    };
-
-    const runDownload = async () => {
-      try {
-        const res = await request.get(API_ENDPOINTS.DUES.LIST);
-        if (res.success) {
-          let list = res.data || [];
-          if (search) {
-            list = list.filter(d => 
-              d.member_name.toLowerCase().includes(search.toLowerCase()) ||
-              d.member_number.toLowerCase().includes(search.toLowerCase())
-            );
-          }
-          if (filterMonth) {
-            list = list.filter(d => parseInt(d.month) === parseInt(filterMonth));
-          }
-          if (filterYear) {
-            list = list.filter(d => parseInt(d.year) === parseInt(filterYear));
-          }
-
-          const printWindow = window.open('', '_blank');
-          const titleStr = `Laporan Iuran Keuangan - ${filterMonth ? getMonthNameLocal(parseInt(filterMonth)) : 'Semua Bulan'} ${filterYear}`;
-
-          printWindow.document.write(`
-            <html>
-              <head>
-                <title>\${titleStr}</title>
-                <style>
-                  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; padding: 20px; line-height: 1.5; }
-                  h2 { margin-bottom: 5px; color: #0f172a; }
-                  p { font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 20px; }
-                  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-                  th { background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; padding: 10px 8px; text-align: left; font-weight: 600; text-transform: uppercase; color: #475569; }
-                  td { border-bottom: 1px solid #f1f5f9; padding: 10px 8px; color: #334155; }
-                  .text-center { text-align: center; }
-                  .text-right { text-align: right; font-weight: bold; }
-                  .status { font-weight: bold; text-transform: uppercase; }
-                  .status-sudah_bayar { color: #16a34a; }
-                  .status-belum_bayar { color: #dc2626; }
-                  .status-menunggak { color: #d97706; }
-                </style>
-              </head>
-              <body>
-                <h2>\${titleStr}</h2>
-                <p>Dicetak pada: \${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-                <table>
-                  <thead>
-                    <tr>
-                      <th style="width: 40px;" class="text-center">No</th>
-                      <th>Nama Anggota</th>
-                      <th>No Anggota</th>
-                      <th>Iuran Bulan</th>
-                      <th>Tanggal Bayar</th>
-                      <th>Metode</th>
-                      <th>Status</th>
-                      <th class="text-right">Nominal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    \${list.map((d, idx) => \`
-                      <tr>
-                        <td class="text-center">\${idx + 1}</td>
-                        <td style="font-weight: 500;">\${d.member_name}</td>
-                        <td>\${d.member_number}</td>
-                        <td>\${getMonthNameLocal(d.month)} \${d.year}</td>
-                        <td>\${new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                        <td style="text-transform: uppercase;">\${d.method}</td>
-                        <td class="status status-\${d.status}">\${d.status.replace('_', ' ')}</td>
-                        <td class="text-right">Rp \${parseFloat(d.amount).toLocaleString()}</td>
-                      </tr>
-                    \`).join('')}
-                    <tr>
-                      <td colspan="7" class="text-right" style="padding-top: 15px; border-bottom: none;">TOTAL PENERIMAAN:</td>
-                      <td class="text-right" style="padding-top: 15px; border-bottom: none; font-size: 13px; color: #1e293b;">
-                        Rp \${list.reduce((sum, d) => sum + parseFloat(d.amount), 0).toLocaleString()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <script>
-                  window.onload = function() {
-                    window.print();
-                    window.close();
-                  }
-                </script>
-              </body>
-            </html>
-          `);
-          printWindow.document.close();
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error('Gagal mencetak PDF');
-      }
-    };
-    runDownload();
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal mengambil data tagihan iuran');
+    } finally {
+      setIsUnpaidLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchDues();
-  }, [page, limit, search, filterMonth, filterYear]);
+    if (activeTab === 'list') {
+      fetchDues();
+    } else {
+      fetchUnpaidDues();
+    }
+  }, [page, limit, search, filterMonth, filterYear, activeTab]);
 
   useEffect(() => {
     async function loadMembers() {
       try {
-        const res = await request.get(API_ENDPOINTS.MEMBERS.LIST);
-        if (res.success) setMembers(res.data);
+        const res = await request.get(API_ENDPOINTS.MEMBERS.LIST + '?limit=1000');
+        if (res.success) setMembers(res.data || []);
       } catch (err) {
         console.error(err);
       }
     }
     loadMembers();
   }, []);
+
+  const loadMembersOptions = async (inputValue) => {
+    try {
+      const res = await request.get(`${API_ENDPOINTS.MEMBERS.LIST}?search=${inputValue}&limit=50`);
+      if (res.success && res.data) {
+        return res.data.map(m => ({
+          value: m.id,
+          label: `${m.name} (${m.member_number})`
+        }));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    return [];
+  };
 
   const handleMonthToggle = (month) => {
     const isSelected = paymentForm.months.includes(month);
@@ -255,8 +139,8 @@ export default function Dues({ user }) {
       updatedMonths = [...paymentForm.months, month];
     }
     
-    // Automatically estimate total fee based on IDR 150k monthly
-    const estimatedFee = updatedMonths.length * 150000;
+    const duesRate = parseFloat(settings?.default_dues_amount) || 85000;
+    const estimatedFee = updatedMonths.length * duesRate;
     setPaymentForm(prev => ({
       ...prev,
       months: updatedMonths,
@@ -329,7 +213,11 @@ export default function Dues({ user }) {
         setIsModalOpen(false);
         setEditingDue(null);
         resetForm();
-        fetchDues();
+        if (activeTab === 'list') {
+          fetchDues();
+        } else {
+          fetchUnpaidDues();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -356,13 +244,352 @@ export default function Dues({ user }) {
     return names[mNum - 1] || '';
   };
 
+  const handlePayUnpaid = (unpaidInfo) => {
+    const firstUnpaid = unpaidInfo.unpaid_months[0];
+    const year = firstUnpaid ? firstUnpaid.year : new Date().getFullYear();
+    const monthsInYear = unpaidInfo.unpaid_months.filter(m => m.year === year).map(m => m.month);
+
+    const defaultDuesRate = parseFloat(settings?.default_dues_amount) || 85000;
+    const totalAmount = monthsInYear.length * defaultDuesRate;
+
+    setPaymentForm({
+      member_id: unpaidInfo.member_id,
+      months: monthsInYear,
+      year: year,
+      amount: String(totalAmount),
+      method: 'cash',
+      notes: `Pelunasan tagihan bulan: ${monthsInYear.map(m => getMonthName(m)).join(', ')} (${year})`,
+      status: 'sudah_bayar'
+    });
+    setIsModalOpen(true);
+  };
+
+  const printInvoice = (unpaidInfo) => {
+    const printWindow = window.open('', '_blank');
+    const systemName = settings?.app_name || 'Taekwondo Club Management';
+    const dojangName = settings?.dojang_name || 'Dojang Taekwondo';
+    const dojangAddress = settings?.address || '';
+    const dojangWa = settings?.whatsapp || '';
+    const dojangEmail = settings?.email || '';
+
+    const defaultDuesRate = parseFloat(settings?.default_dues_amount) || 85000;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice Tagihan - ${unpaidInfo.member_name}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #334155; padding: 40px; line-height: 1.6; background-color: #fff; }
+            .invoice-card { max-width: 800px; margin: 0 auto; border: 1px solid #e2e8f0; padding: 40px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #f1f5f9; padding-bottom: 24px; margin-bottom: 24px; }
+            .logo-area h2 { margin: 0; color: #0f172a; font-size: 24px; font-weight: 800; text-transform: uppercase; }
+            .logo-area p { margin: 4px 0 0 0; font-size: 13px; color: #64748b; }
+            .invoice-details { text-align: right; }
+            .invoice-details h3 { margin: 0; color: #2563eb; font-size: 20px; font-weight: 700; }
+            .invoice-details p { margin: 4px 0 0 0; font-size: 13px; color: #64748b; }
+            .info-section { display: flex; justify-content: space-between; margin-bottom: 32px; font-size: 14px; }
+            .info-box h4 { margin: 0 0 8px 0; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; }
+            .info-box p { margin: 4px 0; color: #0f172a; }
+            table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; }
+            th { background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; text-transform: uppercase; font-size: 12px; }
+            td { border-bottom: 1px solid #f1f5f9; padding: 16px; color: #334155; }
+            .text-right { text-align: right; }
+            .total-row td { font-weight: 700; font-size: 16px; color: #0f172a; background-color: #f8fafc; border-top: 2px solid #e2e8f0; }
+            .payment-instructions { margin-top: 40px; padding: 20px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9; font-size: 13px; }
+            .payment-instructions h5 { margin: 0 0 8px 0; color: #0f172a; font-size: 14px; font-weight: 600; }
+            .payment-instructions p { margin: 4px 0; color: #475569; }
+            .footer { margin-top: 60px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+            @media print {
+              body { padding: 0; background-color: transparent; }
+              .invoice-card { border: none; padding: 0; box-shadow: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-card">
+            <div class="header">
+              <div class="logo-area">
+                <h2>${dojangName}</h2>
+                <p>${systemName}</p>
+                ${dojangAddress ? `<p>${dojangAddress}</p>` : ''}
+              </div>
+              <div class="invoice-details">
+                <h3>TAGIHAN IURAN</h3>
+                <p>Tanggal Tagihan: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p>Status: <span style="color: #dc2626; font-weight: bold; text-transform: uppercase;">BELUM LUNAS</span></p>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <div class="info-box">
+                <h4>Ditujukan Kepada:</h4>
+                <p style="font-weight: bold; font-size: 16px;">${unpaidInfo.member_name}</p>
+                <p>No. Anggota: ${unpaidInfo.member_number}</p>
+              </div>
+              <div class="info-box" style="text-align: right;">
+                <h4>Kontak Pengelola:</h4>
+                ${dojangWa ? `<p>WhatsApp: ${dojangWa}</p>` : ''}
+                ${dojangEmail ? `<p>Email: ${dojangEmail}</p>` : ''}
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 50px;">No</th>
+                  <th>Deskripsi Item</th>
+                  <th class="text-right">Bulan Tagihan</th>
+                  <th class="text-right" style="width: 120px;">Tarif Bulanan</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${unpaidInfo.unpaid_months.map((m, idx) => `
+                  <tr>
+                    <td>${idx + 1}</td>
+                    <td style="font-weight: 500;">Iuran Bulanan Taekwondo</td>
+                    <td class="text-right">${getMonthName(m.month)} ${m.year}</td>
+                    <td class="text-right">Rp ${parseFloat(defaultDuesRate).toLocaleString()}</td>
+                  </tr>
+                `).join('')}
+                <tr class="total-row">
+                  <td colspan="3" class="text-right">TOTAL TAGIHAN (${unpaidInfo.total_unpaid} Bulan):</td>
+                  <td class="text-right">Rp ${parseFloat(unpaidInfo.total_bill).toLocaleString()}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="payment-instructions">
+              <h5>Petunjuk Pembayaran:</h5>
+              <p>1. Pembayaran dapat dilakukan secara tunai (Cash) langsung kepada petugas keuangan dojang.</p>
+              <p>2. Atau transfer melalui rekening resmi dojang/QRIS yang tersedia di konter pendaftaran.</p>
+              <p>3. Setelah melakukan transfer, harap kirimkan bukti transfer ke WhatsApp Pengelola: <strong>${dojangWa || '-'}</strong> untuk diverifikasi.</p>
+            </div>
+
+            <div class="footer">
+              <p>Terima kasih atas partisipasi dan dukungan Anda dalam latihan Taekwondo.</p>
+              <p>© ${new Date().getFullYear()} ${dojangName}. Seluruh hak cipta dilindungi.</p>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
+  const downloadDuesExcel = () => {
+    const runDownload = async () => {
+      try {
+        const res = await request.get(API_ENDPOINTS.DUES.LIST);
+        if (res.success) {
+          let list = res.data || [];
+          if (search) {
+            list = list.filter(d => 
+              d.member_name.toLowerCase().includes(search.toLowerCase())
+            );
+          }
+          if (filterMonth) {
+            list = list.filter(d => parseInt(d.month) === parseInt(filterMonth));
+          }
+          if (filterYear) {
+            list = list.filter(d => parseInt(d.year) === parseInt(filterYear));
+          }
+
+          const headers = ['No', 'Nama Anggota', 'No Anggota', 'Iuran Bulan', 'Tahun', 'Tanggal Bayar', 'Nominal', 'Metode Bayar', 'Status'];
+          const rows = list.map((d, index) => [
+            index + 1,
+            d.member_name,
+            d.member_number,
+            getMonthName(d.month),
+            d.year,
+            new Date(d.payment_date).toLocaleDateString('id-ID'),
+            `Rp ${parseFloat(d.amount).toLocaleString()}`,
+            d.method.toUpperCase(),
+            d.status.toUpperCase()
+          ]);
+
+          const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", `Laporan_Iuran_${filterMonth ? `Bulan_${filterMonth}` : 'Semua_Bulan'}_${filterYear}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Gagal mendownload excel');
+      }
+    };
+    runDownload();
+  };
+
+  const downloadDuesPdf = () => {
+    const runDownload = async () => {
+      try {
+        const res = await request.get(API_ENDPOINTS.DUES.LIST);
+        if (res.success) {
+          let list = res.data || [];
+          if (search) {
+            list = list.filter(d => 
+              d.member_name.toLowerCase().includes(search.toLowerCase())
+            );
+          }
+          if (filterMonth) {
+            list = list.filter(d => parseInt(d.month) === parseInt(filterMonth));
+          }
+          if (filterYear) {
+            list = list.filter(d => parseInt(d.year) === parseInt(filterYear));
+          }
+
+          const printWindow = window.open('', '_blank');
+          const titleStr = `Laporan Iuran Keuangan - ${filterMonth ? getMonthName(parseInt(filterMonth)) : 'Semua Bulan'} ${filterYear}`;
+
+          printWindow.document.write(`
+            <html>
+              <head>
+                <title>${titleStr}</title>
+                <style>
+                  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; padding: 20px; line-height: 1.5; }
+                  h2 { margin-bottom: 5px; color: #0f172a; }
+                  p { font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 20px; }
+                  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+                  th { background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; padding: 10px 8px; text-align: left; font-weight: 600; text-transform: uppercase; color: #475569; }
+                  td { border-bottom: 1px solid #f1f5f9; padding: 10px 8px; color: #334155; }
+                  .text-center { text-align: center; }
+                  .text-right { text-align: right; font-weight: bold; }
+                  .status { font-weight: bold; text-transform: uppercase; }
+                  .status-sudah_bayar { color: #16a34a; }
+                  .status-belum_bayar { color: #dc2626; }
+                  .status-menunggak { color: #d97706; }
+                </style>
+              </head>
+              <body>
+                <h2>${titleStr}</h2>
+                <p>Dicetak pada: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                <table>
+                  <thead>
+                    <tr>
+                      <th style="width: 40px;" class="text-center">No</th>
+                      <th>Nama Anggota</th>
+                      <th>No Anggota</th>
+                      <th>Iuran Bulan</th>
+                      <th>Tanggal Bayar</th>
+                      <th>Metode</th>
+                      <th>Status</th>
+                      <th class="text-right">Nominal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${list.map((d, idx) => `
+                      <tr>
+                        <td class="text-center">${idx + 1}</td>
+                        <td style="font-weight: 500;">${d.member_name}</td>
+                        <td>${d.member_number}</td>
+                        <td>${getMonthName(d.month)} ${d.year}</td>
+                        <td>${new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td style="text-transform: uppercase;">${d.method}</td>
+                        <td class="status status-${d.status}">${d.status.replace('_', ' ')}</td>
+                        <td class="text-right">Rp ${parseFloat(d.amount).toLocaleString()}</td>
+                      </tr>
+                    `).join('')}
+                    <tr>
+                      <td colspan="7" class="text-right" style="padding-top: 15px; border-bottom: none;">TOTAL PENERIMAAN:</td>
+                      <td class="text-right" style="padding-top: 15px; border-bottom: none; font-size: 13px; color: #1e293b;">
+                        Rp ${list.reduce((sum, d) => sum + parseFloat(d.amount), 0).toLocaleString()}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <script>
+                  window.onload = function() {
+                    window.print();
+                    window.close();
+                  }
+                </script>
+              </body>
+            </html>
+          `);
+          printWindow.document.close();
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Gagal mencetak PDF');
+      }
+    };
+    runDownload();
+  };
+
+  const reactSelectCustomStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: 'rgba(15, 23, 42, 0.6)',
+      borderColor: state.isFocused ? '#3b82f6' : '#1e293b',
+      borderRadius: '0.75rem',
+      fontSize: '12px',
+      color: '#e2e8f0',
+      minHeight: '38px',
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: '#3b82f6'
+      }
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: '#0f172a',
+      border: '1px solid #1e293b',
+      borderRadius: '0.75rem',
+      zIndex: 9999
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected 
+        ? '#3b82f6' 
+        : state.isFocused 
+          ? '#1e293b' 
+          : 'transparent',
+      color: '#f8fafc',
+      fontSize: '12px',
+      cursor: 'pointer',
+      '&:active': {
+        backgroundColor: '#3b82f6'
+      }
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#e2e8f0'
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: '#e2e8f0'
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#64748b'
+    })
+  };
+
+  const filteredUnpaidDues = unpaidDues.filter(u =>
+    u.member_name.toLowerCase().includes(unpaidSearch.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       {/* Banner */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-100">Kelola Pembayaran Iuran</h2>
-          <p className="text-xs text-slate-400">Total iuran terkumpul bulan ini</p>
+          <p className="text-xs text-slate-400">
+            {activeTab === 'list' 
+              ? 'Daftar riwayat penerimaan pembayaran iuran bulanan anggota' 
+              : 'Daftar tagihan bulanan anggota yang belum terlunasi'}
+          </p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -372,171 +599,296 @@ export default function Dues({ user }) {
         </button>
       </div>
 
-      {/* Filter and Search */}
-      <div className="glass-panel p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
-        <div className="relative w-full md:w-80">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
-            <Search size={16} />
-          </span>
-          <input
-            type="text"
-            placeholder="Cari anggota, no. iuran..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-          {/* Month Filter */}
-          <select
-            value={filterMonth}
-            onChange={(e) => setFilterMonth(e.target.value)}
-            className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-none"
-          >
-            <option value="">Semua Bulan</option>
-            <option value="1">Januari</option>
-            <option value="2">Februari</option>
-            <option value="3">Maret</option>
-            <option value="4">April</option>
-            <option value="5">Mei</option>
-            <option value="6">Juni</option>
-            <option value="7">Juli</option>
-            <option value="8">Agustus</option>
-            <option value="9">September</option>
-            <option value="10">Oktober</option>
-            <option value="11">November</option>
-            <option value="12">Desember</option>
-          </select>
-
-          {/* Year Filter */}
-          <input
-            type="number"
-            value={filterYear}
-            onChange={(e) => setFilterYear(parseInt(e.target.value) || new Date().getFullYear())}
-            className="w-20 px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-none"
-            placeholder="Tahun"
-          />
-
-          {/* Download Buttons */}
-          <button
-            onClick={downloadDuesExcel}
-            className="px-3 py-1.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1.5 transition-colors shadow-md shadow-emerald-600/10"
-            title="Download Excel"
-          >
-            <FileSpreadsheet size={13} /> Excel
-          </button>
-          <button
-            onClick={downloadDuesPdf}
-            className="px-3 py-1.5 text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg flex items-center gap-1.5 transition-colors shadow-md shadow-red-600/20"
-            title="Download PDF"
-          >
-            <FileText size={13} /> PDF
-          </button>
-        </div>
+      {/* Tabs Layout */}
+      <div className="flex border-b border-slate-800">
+        <button 
+          onClick={() => { setActiveTab('list'); setPage(1); }}
+          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+            activeTab === 'list' 
+              ? 'border-blue-500 text-blue-500' 
+              : 'border-transparent text-slate-450 hover:text-slate-200'
+          }`}
+        >
+          Riwayat Pembayaran
+        </button>
+        <button 
+          onClick={() => { setActiveTab('unpaid'); setPage(1); }}
+          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+            activeTab === 'unpaid' 
+              ? 'border-blue-500 text-blue-500' 
+              : 'border-transparent text-slate-450 hover:text-slate-200'
+          }`}
+        >
+          Tagihan & Penagihan
+          {unpaidDues.length > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-red-600 text-white font-bold animate-pulse">
+              {unpaidDues.length}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Dues Table */}
-      <div className="glass-panel rounded-xl border border-slate-800 shadow-xl overflow-hidden">
-        {isLoading ? (
-          <div className="p-12 text-center text-slate-400">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-          </div>
-        ) : dues.length === 0 ? (
-          <div className="p-12 text-center text-slate-550 text-xs">
-            Tidak ada transaksi pembayaran iuran ditemukan
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-950/40 border-b border-slate-800 text-slate-400 font-semibold uppercase">
-                  <th className="p-4">Anggota</th>
-                  <th className="p-4">Iuran Bulan</th>
-                  <th className="p-4">Tanggal Bayar</th>
-                  <th className="p-4">Nominal</th>
-                  <th className="p-4">Metode</th>
-                  <th className="p-4 text-center">Bukti / Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {dues.map(d => (
-                  <tr key={d.id} className="hover:bg-slate-850/40">
-                    <td className="p-4">
-                      <div className="font-semibold text-slate-200">{d.member_name}</div>
-                      <span className="text-[10px] text-slate-500">{d.member_number}</span>
-                    </td>
-                    <td className="p-4 text-slate-300 font-medium">
-                      {getMonthName(d.month)} {d.year}
-                    </td>
-                    <td className="p-4 text-slate-400">
-                      {new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="p-4 text-slate-100 font-semibold">
-                      Rp {parseFloat(d.amount).toLocaleString()}
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 uppercase text-[10px] font-bold">
-                        {d.method}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-center gap-2">
-                        {d.attachment && (
-                          <a 
-                            href={d.attachment} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-semibold transition-colors"
-                          >
-                            Lihat Bukti
-                          </a>
-                        )}
-                        <button 
-                          onClick={() => {
-                            setSelectedReceipt(d);
-                            setIsReceiptOpen(true);
-                          }}
-                          className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-colors inline-flex items-center gap-1 text-[10px] font-medium"
-                          title="Print Receipt"
-                        >
-                          <Printer size={13} /> Kuitansi
-                        </button>
-                        <button 
-                          onClick={() => startEditDue(d)}
-                          className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:text-blue-500 transition-colors"
-                          title="Edit"
-                        >
-                          <Edit size={13} />
-                        </button>
-                        <button 
-                          onClick={() => handleDueDelete(d.id)}
-                          className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:text-red-500 transition-colors"
-                          title="Hapus"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {activeTab === 'list' ? (
+        <>
+          {/* Filter and Search for history list */}
+          <div className="glass-panel p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="relative w-full md:w-80">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                <Search size={16} />
+              </span>
+              <input
+                type="text"
+                placeholder="Cari nama anggota..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+              />
+            </div>
 
-        <Pagination 
-          page={page}
-          limit={limit}
-          total={total}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          onLimitChange={(newLimit) => {
-            setLimit(newLimit);
-            setPage(1);
-          }}
-        />
-      </div>
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+              <select
+                value={filterMonth}
+                onChange={(e) => setFilterMonth(e.target.value)}
+                className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-none"
+              >
+                <option value="">Semua Bulan</option>
+                <option value="1">Januari</option>
+                <option value="2">Februari</option>
+                <option value="3">Maret</option>
+                <option value="4">April</option>
+                <option value="5">Mei</option>
+                <option value="6">Juni</option>
+                <option value="7">Juli</option>
+                <option value="8">Agustus</option>
+                <option value="9">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+              </select>
+
+              <input
+                type="number"
+                value={filterYear}
+                onChange={(e) => setFilterYear(parseInt(e.target.value) || new Date().getFullYear())}
+                className="w-20 px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-none"
+                placeholder="Tahun"
+              />
+
+              <button
+                onClick={downloadDuesExcel}
+                className="px-3 py-1.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1.5 transition-colors shadow-md shadow-emerald-600/10"
+                title="Download Excel"
+              >
+                <FileSpreadsheet size={13} /> Excel
+              </button>
+              <button
+                onClick={downloadDuesPdf}
+                className="px-3 py-1.5 text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg flex items-center gap-1.5 transition-colors shadow-md shadow-red-600/20"
+                title="Download PDF"
+              >
+                <FileText size={13} /> PDF
+              </button>
+            </div>
+          </div>
+
+          {/* Dues History Table */}
+          <div className="glass-panel rounded-xl border border-slate-800 shadow-xl overflow-hidden">
+            {isLoading ? (
+              <div className="p-12 text-center text-slate-400">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+              </div>
+            ) : dues.length === 0 ? (
+              <div className="p-12 text-center text-slate-550 text-xs">
+                Tidak ada data pembayaran iuran ditemukan
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-950/40 border-b border-slate-800 text-slate-400 font-semibold uppercase">
+                      <th className="p-4">Anggota</th>
+                      <th className="p-4">Iuran Bulan</th>
+                      <th className="p-4">Tanggal Bayar</th>
+                      <th className="p-4">Nominal</th>
+                      <th className="p-4">Metode</th>
+                      <th className="p-4 text-center">Bukti / Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {dues.map(d => (
+                      <tr key={d.id} className="hover:bg-slate-850/40">
+                        <td className="p-4">
+                          <div className="font-semibold text-slate-200">{d.member_name}</div>
+                        </td>
+                        <td className="p-4 text-slate-300 font-medium">
+                          {getMonthName(d.month)} {d.year}
+                        </td>
+                        <td className="p-4 text-slate-400">
+                          {new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td className="p-4 text-slate-100 font-semibold">
+                          Rp {parseFloat(d.amount).toLocaleString()}
+                        </td>
+                        <td className="p-4">
+                          <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-250 uppercase text-[10px] font-bold">
+                            {d.method}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center justify-center gap-2">
+                            {d.attachment && (
+                              <a 
+                                href={d.attachment} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="p-1.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-[10px] font-semibold transition-colors"
+                              >
+                                Lihat Bukti
+                              </a>
+                            )}
+                            <button 
+                              onClick={() => {
+                                setSelectedReceipt(d);
+                                setIsReceiptOpen(true);
+                              }}
+                              className="p-1.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 transition-colors inline-flex items-center gap-1 text-[10px] font-medium"
+                              title="Print Receipt"
+                            >
+                              <Printer size={13} /> Kuitansi
+                            </button>
+                            <button 
+                              onClick={() => startEditDue(d)}
+                              className="p-1.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 hover:text-blue-400 transition-colors"
+                              title="Edit"
+                            >
+                              <Edit size={13} />
+                            </button>
+                            <button 
+                              onClick={() => handleDueDelete(d.id)}
+                              className="p-1.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 hover:text-red-400 transition-colors"
+                              title="Hapus"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <Pagination 
+              page={page}
+              limit={limit}
+              total={total}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              onLimitChange={(newLimit) => {
+                setLimit(newLimit);
+                setPage(1);
+              }}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Search bar for unpaid list */}
+          <div className="glass-panel p-4 rounded-xl border border-slate-800 flex justify-between items-center">
+            <div className="relative w-full md:w-80">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                <Search size={16} />
+              </span>
+              <input
+                type="text"
+                placeholder="Cari nama anggota belum bayar..."
+                value={unpaidSearch}
+                onChange={(e) => setUnpaidSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="text-slate-400 text-xs flex items-center gap-1.5">
+              <AlertTriangle size={15} className="text-yellow-500" />
+              <span>Default Iuran: <strong className="text-slate-200">Rp {parseFloat(settings?.default_dues_amount || 85000).toLocaleString()} / bulan</strong></span>
+            </div>
+          </div>
+
+          {/* Unpaid Bills Table */}
+          <div className="glass-panel rounded-xl border border-slate-800 shadow-xl overflow-hidden">
+            {isUnpaidLoading ? (
+              <div className="p-12 text-center text-slate-400">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+              </div>
+            ) : filteredUnpaidDues.length === 0 ? (
+              <div className="p-12 text-center text-slate-500 text-xs">
+                Tidak ada tunggakan iuran anggota ditemukan
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-950/40 border-b border-slate-800 text-slate-400 font-semibold uppercase">
+                      <th className="p-4" style={{ width: '50px' }}>No</th>
+                      <th className="p-4">Anggota</th>
+                      <th className="p-4">Bulan Belum Dibayar</th>
+                      <th className="p-4 text-center">Jumlah Tunggakan</th>
+                      <th className="p-4 text-right">Total Tagihan</th>
+                      <th className="p-4 text-center">Aksi Penagihan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {filteredUnpaidDues.map((u, idx) => (
+                      <tr key={u.member_id} className="hover:bg-slate-850/40">
+                        <td className="p-4 text-slate-400 font-semibold">{idx + 1}</td>
+                        <td className="p-4">
+                          <div className="font-semibold text-slate-200">{u.member_name}</div>
+                        </td>
+                        <td className="p-4 text-slate-350">
+                          <div className="flex flex-wrap gap-1">
+                            {u.unpaid_months.slice(0, 5).map((m, i) => (
+                              <span key={i} className="px-2 py-0.5 text-[10px] rounded bg-red-950/40 border border-red-900/40 text-red-400">
+                                {getMonthName(m.month)} {m.year}
+                              </span>
+                            ))}
+                            {u.unpaid_months.length > 5 && (
+                              <span className="px-2 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-700 text-slate-400 font-bold">
+                                +{u.unpaid_months.length - 5} bulan lagi
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4 text-center font-bold text-red-500">
+                          {u.total_unpaid} Bulan
+                        </td>
+                        <td className="p-4 text-right font-bold text-slate-100">
+                          Rp {parseFloat(u.total_bill).toLocaleString()}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => printInvoice(u)}
+                              className="px-2.5 py-1.5 rounded bg-slate-850 hover:bg-slate-800 border border-slate-750 text-slate-300 font-semibold text-[10px] flex items-center gap-1 transition-all"
+                            >
+                              <Printer size={13} /> Cetak Invoice
+                            </button>
+                            <button
+                              onClick={() => handlePayUnpaid(u)}
+                              className="px-2.5 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[10px] transition-all"
+                            >
+                              Bayar / Lunasi
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Record Payment Modal */}
       <Modal 
@@ -553,18 +905,22 @@ export default function Dues({ user }) {
             
             {/* Pilih Anggota */}
             <div className="space-y-1 md:col-span-2">
-              <label className="font-semibold text-slate-300">Pilih Anggota *</label>
-              <select
-                value={paymentForm.member_id}
-                onChange={(e) => setPaymentForm(prev => ({ ...prev, member_id: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200 focus:outline-none focus:border-blue-500"
+              <label className="font-semibold text-slate-350 block mb-1">Pilih Anggota *</label>
+              <AsyncSelect
+                cacheOptions
+                defaultOptions
+                loadOptions={loadMembersOptions}
+                value={paymentForm.member_id ? {
+                  value: paymentForm.member_id,
+                  label: members.find(m => m.id === parseInt(paymentForm.member_id))?.name || 'Anggota Terpilih'
+                } : null}
+                onChange={(val) => setPaymentForm(prev => ({ ...prev, member_id: val ? val.value : '' }))}
+                styles={reactSelectCustomStyles}
+                placeholder="Ketik nama anggota untuk mencari..."
+                noOptionsMessage={() => "Anggota tidak ditemukan"}
+                loadingMessage={() => "Mencari..."}
                 required
-              >
-                <option value="">Pilih Anggota Dojang</option>
-                {members.map(m => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.member_number})</option>
-                ))}
-              </select>
+              />
             </div>
 
             {/* Tahun */}
@@ -671,13 +1027,13 @@ export default function Dues({ user }) {
             <input 
               type="file" 
               onChange={(e) => setAttachment(e.target.files[0])}
-              className="w-full text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-slate-850 file:text-slate-200"
+              className="w-full text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-slate-800 file:text-slate-200"
             />
           </div>
 
           {/* Catatan */}
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Keterangan / Keterangan</label>
+            <label className="font-semibold text-slate-300">Keterangan</label>
             <textarea
               rows="2"
               value={paymentForm.notes}
@@ -695,7 +1051,7 @@ export default function Dues({ user }) {
                 setEditingDue(null); 
                 resetForm(); 
               }}
-              className="px-4 py-2 rounded-xl bg-slate-850 text-slate-300"
+              className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-750"
             >
               Batal
             </button>
@@ -713,29 +1069,29 @@ export default function Dues({ user }) {
       {/* Print Receipt Modal */}
       <Modal isOpen={isReceiptOpen} onClose={() => setIsReceiptOpen(false)} title="Bukti Kuitansi Pembayaran">
         {selectedReceipt && (
-          <div className="space-y-6 text-xs text-slate-350 p-4 border border-slate-800 rounded-xl bg-slate-950/40">
+          <div className="space-y-6 text-xs text-slate-300 p-4 border border-slate-800 rounded-xl bg-slate-950/40">
             <div className="text-center space-y-1">
               <h3 className="text-sm font-bold text-slate-100">KUITANSI RESMI</h3>
-              <p className="text-slate-500 uppercase tracking-widest text-[10px]">Taekwondo Club Management</p>
+              <p className="text-slate-555 uppercase tracking-widest text-[10px]">Taekwondo Club Management</p>
             </div>
 
             <div className="grid grid-cols-2 gap-y-2 border-t border-b border-slate-800 py-4">
-              <span className="text-slate-550">No. Transaksi</span>
+              <span className="text-slate-400">No. Transaksi</span>
               <span className="text-slate-200 font-semibold text-right">#TX-{selectedReceipt.id}</span>
               
-              <span className="text-slate-550">Nama Anggota</span>
+              <span className="text-slate-400">Nama Anggota</span>
               <span className="text-slate-200 font-semibold text-right">{selectedReceipt.member_name}</span>
 
-              <span className="text-slate-550">No. Anggota</span>
+              <span className="text-slate-400">No. Anggota</span>
               <span className="text-slate-200 text-right">{selectedReceipt.member_number}</span>
 
-              <span className="text-slate-550">Pembayaran Iuran</span>
+              <span className="text-slate-400">Pembayaran Iuran</span>
               <span className="text-slate-200 font-medium text-right">{getMonthName(selectedReceipt.month)} {selectedReceipt.year}</span>
 
-              <span className="text-slate-550">Metode Bayar</span>
+              <span className="text-slate-400">Metode Bayar</span>
               <span className="text-slate-200 uppercase text-right">{selectedReceipt.method}</span>
 
-              <span className="text-slate-550">Tanggal / Waktu</span>
+              <span className="text-slate-400">Tanggal / Waktu</span>
               <span className="text-slate-200 text-right">{new Date(selectedReceipt.payment_date).toLocaleDateString('id-ID')}</span>
             </div>
 
@@ -744,9 +1100,43 @@ export default function Dues({ user }) {
               <span className="font-bold text-slate-100 text-sm">Rp {parseFloat(selectedReceipt.amount).toLocaleString()}</span>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-850">
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
               <button
-                onClick={() => window.print()}
+                onClick={() => {
+                  const receiptWindow = window.open('', '_blank');
+                  receiptWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>Kuitansi Iuran - TX-${selectedReceipt.id}</title>
+                        <style>
+                          body { font-family: 'Segoe UI', sans-serif; padding: 40px; color: #1e293b; }
+                          .receipt-box { max-width: 500px; margin: 0 auto; border: 2px dashed #cbd5e1; padding: 30px; border-radius: 8px; }
+                          h2 { text-align: center; margin-top: 0; color: #0f172a; text-transform: uppercase; }
+                          p { margin: 8px 0; font-size: 14px; }
+                          .flex-row { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 8px 0; }
+                          .total { font-weight: bold; font-size: 18px; border-top: 2px solid #0f172a; padding-top: 12px; margin-top: 12px; }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="receipt-box">
+                          <h2>Kuitansi Iuran</h2>
+                          <div class="flex-row"><span>No. Transaksi:</span><strong>#TX-${selectedReceipt.id}</strong></div>
+                          <div class="flex-row"><span>Nama Anggota:</span><strong>${selectedReceipt.member_name}</strong></div>
+                          <div class="flex-row"><span>No. Anggota:</span><strong>${selectedReceipt.member_number}</strong></div>
+                          <div class="flex-row"><span>Periode Iuran:</span><strong>${getMonthName(selectedReceipt.month)} ${selectedReceipt.year}</strong></div>
+                          <div class="flex-row"><span>Metode Bayar:</span><strong style="text-transform: uppercase;">${selectedReceipt.method}</strong></div>
+                          <div class="flex-row"><span>Tanggal Bayar:</span><strong>${new Date(selectedReceipt.payment_date).toLocaleDateString('id-ID')}</strong></div>
+                          <div class="flex-row total"><span>TOTAL BAYAR:</span><span>Rp ${parseFloat(selectedReceipt.amount).toLocaleString()}</span></div>
+                          <p style="text-align: center; margin-top: 30px; font-size: 12px; color: #64748b;">Taekwondo Club Management - Kuitansi Bukti Pembayaran Sah</p>
+                        </div>
+                        <script>
+                          window.onload = function() { window.print(); }
+                        </script>
+                      </body>
+                    </html>
+                  `);
+                  receiptWindow.document.close();
+                }}
                 className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 flex items-center gap-1.5 font-semibold"
               >
                 <Printer size={14} /> Cetak Kuitansi
