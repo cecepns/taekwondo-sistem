@@ -425,55 +425,55 @@ export default function TrainingPrograms() {
         /* Sesi Latihan Tab */
         <div className="space-y-4">
           {sessions.length === 0 ? (
-            <div className="glass-panel p-12 text-center text-slate-550 border border-slate-850 rounded-2xl text-xs">
+            <div className="bg-white p-12 text-center text-slate-500 border border-slate-200 rounded-2xl text-xs shadow-sm animate-fade-in">
               Belum ada jadwal sesi latihan yang disusun. Klik "Buat Sesi Latihan" untuk menjadwalkan.
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {sessions.map(session => (
-                <div key={session.id} className="glass-panel p-5 rounded-2xl border border-slate-850 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div key={session.id} className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="space-y-2.5">
                     <div>
-                      <h3 className="font-bold text-slate-200 text-sm">{session.program_name}</h3>
-                      <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                        <Calendar size={13} className="text-slate-500" />
+                      <h3 className="font-bold text-slate-800 text-sm">{session.program_name}</h3>
+                      <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <Calendar size={13} className="text-slate-400" />
                         {new Date(session.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5">
                       {session.items.map((item, idx) => (
-                        <span key={idx} className="px-2 py-0.5 text-[10px] rounded bg-slate-800/60 border border-slate-750 text-slate-350">
+                        <span key={idx} className="px-2 py-0.5 text-[10px] rounded bg-slate-100 border border-slate-200 text-slate-650 font-medium whitespace-nowrap">
                           {item.name} ({item.duration}m)
                         </span>
                       ))}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 w-full md:w-auto justify-between border-t border-slate-850 pt-3 md:pt-0 md:border-t-0">
+                  <div className="flex items-center gap-4 w-full md:w-auto justify-between border-t border-slate-100 pt-3 md:pt-0 md:border-t-0">
                     <div className="text-left md:text-right">
-                      <span className="text-[10px] text-slate-500 block uppercase font-semibold tracking-wider">Durasi Total</span>
-                      <strong className="text-sm font-bold text-blue-400">{session.total_duration} Menit</strong>
+                      <span className="text-[10px] text-slate-450 block uppercase font-semibold tracking-wider">Durasi Total</span>
+                      <strong className="text-sm font-bold text-blue-600">{session.total_duration} Menit</strong>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       <button 
                         onClick={() => printSession(session)}
-                        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-750 border border-slate-750 text-slate-300 text-xs font-semibold flex items-center gap-1 transition-all"
+                        className="p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-all shadow-sm"
                         title="Print"
                       >
                         <Printer size={14} /> Cetak
                       </button>
                       <button 
                         onClick={() => startEditSession(session)}
-                        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-750 border border-slate-750 text-slate-300 hover:text-blue-400 transition-colors"
+                        className="p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-blue-600 transition-colors shadow-sm"
                         title="Edit"
                       >
                         <Edit size={14} />
                       </button>
                       <button 
                         onClick={() => handleSessionDelete(session.id)}
-                        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-750 border border-slate-750 text-slate-350 hover:text-red-400 transition-colors"
+                        className="p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-red-650 transition-colors shadow-sm"
                         title="Hapus"
                       >
                         <Trash2 size={14} />

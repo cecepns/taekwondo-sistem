@@ -169,39 +169,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Shortlinks / Quick Links Grid */}
-      {allowedShortlinks.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-slate-350 uppercase tracking-wider">Akses Cepat Menu Utama</h4>
-            <span className="text-[10px] text-slate-500 font-semibold">Tautan langsung ke fitur terotorisasi Anda</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {allowedShortlinks.map(link => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="group relative overflow-hidden p-4 bg-slate-900/40 hover:bg-slate-850/60 border border-slate-800 hover:border-slate-700/80 rounded-2xl transition-all duration-300 flex flex-col gap-3 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                >
-                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${link.color} text-white w-10 h-10 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon size={18} />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-200 group-hover:text-blue-400 transition-colors flex items-center gap-1">
-                      {link.name}
-                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </h5>
-                    <p className="text-[10px] text-slate-500 mt-1 leading-snug">{link.desc}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
         <StatCard
@@ -346,6 +313,39 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Shortlinks / Quick Links Grid (Moved below charts) */}
+      {allowedShortlinks.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Akses Cepat Menu Utama</h4>
+            <span className="text-[10px] text-slate-450 font-semibold">Tautan langsung ke fitur terotorisasi Anda</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {allowedShortlinks.map(link => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="group relative overflow-hidden p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-2xl transition-all duration-300 flex flex-col gap-3 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                >
+                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${link.color} text-white w-10 h-10 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon size={18} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors flex items-center gap-1">
+                      {link.name}
+                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h5>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-snug">{link.desc}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -628,7 +628,7 @@ export default function Dues({ user, settings }) {
       {activeTab === 'list' ? (
         <>
           {/* Filter and Search for history list */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-center shadow-sm">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center shadow-sm">
             <div className="relative w-full md:w-80">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                 <Search size={16} />
@@ -642,11 +642,11 @@ export default function Dues({ user, settings }) {
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-start md:justify-end">
               <select
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(e.target.value)}
-                className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-650 focus:outline-none"
+                className="flex-1 md:flex-initial min-w-[110px] px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-655 focus:outline-none"
               >
                 <option value="">Semua Bulan</option>
                 <option value="1">Januari</option>
@@ -667,20 +667,20 @@ export default function Dues({ user, settings }) {
                 type="number"
                 value={filterYear}
                 onChange={(e) => setFilterYear(parseInt(e.target.value) || new Date().getFullYear())}
-                className="w-20 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-650 focus:outline-none"
+                className="w-16 flex-1 md:flex-initial px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-655 focus:outline-none"
                 placeholder="Tahun"
               />
 
               <button
                 onClick={downloadDuesExcel}
-                className="px-3 py-1.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1.5 transition-colors shadow-md shadow-emerald-600/10"
+                className="flex-1 md:flex-initial px-3 py-1.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-emerald-600/10"
                 title="Download Excel"
               >
                 <FileSpreadsheet size={13} /> Excel
               </button>
               <button
                 onClick={downloadDuesPdf}
-                className="px-3 py-1.5 text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg flex items-center gap-1.5 transition-colors shadow-md shadow-red-600/20"
+                className="flex-1 md:flex-initial px-3 py-1.5 text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-red-600/20"
                 title="Download PDF"
               >
                 <FileText size={13} /> PDF
@@ -714,19 +714,19 @@ export default function Dues({ user, settings }) {
                   <tbody className="divide-y divide-slate-100">
                     {dues.map(d => (
                       <tr key={d.id} className="hover:bg-slate-50/50">
-                        <td className="p-4 font-semibold text-slate-800">
+                        <td className="p-4 font-semibold text-slate-800 whitespace-nowrap">
                           {d.member_name}
                         </td>
-                        <td className="p-4 text-slate-650 font-medium">
+                        <td className="p-4 text-slate-650 font-medium whitespace-nowrap">
                           {getMonthName(d.month)} {d.year}
                         </td>
-                        <td className="p-4 text-slate-500">
+                        <td className="p-4 text-slate-500 whitespace-nowrap">
                           {new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
-                        <td className="p-4 text-slate-800 font-semibold">
+                        <td className="p-4 text-slate-800 font-semibold whitespace-nowrap">
                           Rp {parseFloat(d.amount).toLocaleString()}
                         </td>
-                        <td className="p-4">
+                        <td className="p-4 whitespace-nowrap">
                           <span className="px-2.5 py-0.5 rounded bg-blue-50 border border-blue-100 text-blue-700 uppercase text-[10px] font-bold">
                             {d.method}
                           </span>
@@ -792,7 +792,8 @@ export default function Dues({ user, settings }) {
       ) : (
         <>
           {/* Search bar for unpaid list */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
+          {/* Search bar for unpaid list */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center shadow-sm">
             <div className="relative w-full md:w-80">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                 <Search size={16} />
@@ -805,8 +806,8 @@ export default function Dues({ user, settings }) {
                 className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-850 text-xs placeholder:text-slate-450 focus:outline-none focus:border-blue-500"
               />
             </div>
-            <div className="text-slate-600 text-xs flex items-center gap-1.5">
-              <AlertTriangle size={15} className="text-yellow-600" />
+            <div className="text-slate-600 text-xs flex items-center justify-start md:justify-end gap-1.5">
+              <AlertTriangle size={15} className="text-yellow-600 flex-shrink-0" />
               <span>Default Iuran: <strong className="text-slate-800">Rp {parseFloat(settings?.default_dues_amount || 85000).toLocaleString()} / bulan</strong></span>
             </div>
           </div>
@@ -838,27 +839,27 @@ export default function Dues({ user, settings }) {
                     {filteredUnpaidDues.map((u, idx) => (
                       <tr key={u.member_id} className="hover:bg-slate-50/50">
                         <td className="p-4 text-slate-500 font-semibold">{idx + 1}</td>
-                        <td className="p-4 font-semibold text-slate-800">
+                        <td className="p-4 font-semibold text-slate-800 whitespace-nowrap">
                           {u.member_name}
                         </td>
                         <td className="p-4 text-slate-650">
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1 min-w-[180px]">
                             {u.unpaid_months.slice(0, 5).map((m, i) => (
-                              <span key={i} className="px-2 py-0.5 text-[10px] rounded bg-red-50 border border-red-100 text-red-600 font-semibold">
+                              <span key={i} className="px-2 py-0.5 text-[10px] rounded bg-red-50 border border-red-100 text-red-600 font-semibold whitespace-nowrap">
                                 {getMonthName(m.month)} {m.year}
                               </span>
                             ))}
                             {u.unpaid_months.length > 5 && (
-                              <span className="px-2 py-0.5 text-[10px] rounded bg-slate-100 border border-slate-200 text-slate-500 font-bold">
+                              <span className="px-2 py-0.5 text-[10px] rounded bg-slate-100 border border-slate-200 text-slate-500 font-bold whitespace-nowrap">
                                 +{u.unpaid_months.length - 5} bulan lagi
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="p-4 text-center font-bold text-red-600">
+                        <td className="p-4 text-center font-bold text-red-600 whitespace-nowrap">
                           {u.total_unpaid} Bulan
                         </td>
-                        <td className="p-4 text-right font-bold text-slate-800">
+                        <td className="p-4 text-right font-bold text-slate-800 whitespace-nowrap">
                           Rp {parseFloat(u.total_bill).toLocaleString()}
                         </td>
                         <td className="p-4">
