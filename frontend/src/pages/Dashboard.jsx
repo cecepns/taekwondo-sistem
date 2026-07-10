@@ -155,6 +155,39 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      {/* Shortlinks / Quick Links Grid (Moved to top) */}
+      {allowedShortlinks.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Akses Cepat Menu Utama</h4>
+            <span className="text-[10px] text-slate-450 font-semibold">Tautan langsung ke fitur terotorisasi Anda</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {allowedShortlinks.map(link => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="group relative overflow-hidden p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-2xl transition-all duration-300 flex flex-col gap-3 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                >
+                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${link.color} text-white w-10 h-10 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon size={18} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors flex items-center gap-1">
+                      {link.name}
+                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h5>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-snug">{link.desc}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Hero Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 p-6 md:p-8 shadow-xl">
         <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full translate-x-24 -translate-y-24" />
@@ -314,38 +347,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Shortlinks / Quick Links Grid (Moved below charts) */}
-      {allowedShortlinks.length > 0 && (
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Akses Cepat Menu Utama</h4>
-            <span className="text-[10px] text-slate-450 font-semibold">Tautan langsung ke fitur terotorisasi Anda</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {allowedShortlinks.map(link => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="group relative overflow-hidden p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-2xl transition-all duration-300 flex flex-col gap-3 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                >
-                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${link.color} text-white w-10 h-10 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon size={18} />
-                  </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors flex items-center gap-1">
-                      {link.name}
-                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </h5>
-                    <p className="text-[10px] text-slate-500 mt-1 leading-snug">{link.desc}</p>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
