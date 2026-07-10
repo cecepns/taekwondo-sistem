@@ -1149,6 +1149,54 @@ app.post('/api/attendance/coach', authenticateToken, checkRole(['super_admin', '
   res.json({ success: true, message: 'Coach attendance recorded', honor_calculated: honor });
 });
 
+app.post('/api/attendance/coaches', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const { date, attendances } = req.body;
+  if (!date || !attendances || !Array.isArray(attendances)) {
+    return res.status(400).json({ success: false, message: 'Invalid data format' });
+  }
+
+  try {
+    for (const att of attendances) {
+      const coachId = parseInt(att.coach_id);
+      if (!coachId) continue;
+
+      let coach = null;
+      if (useMemoryDb) {
+        coach = memoryDb.coaches.find(c => c.id === coachId);
+      } else {
+        const [rows] = await pool.query('SELECT * FROM coaches WHERE id = ?', [coachId]);
+        if (rows.length > 0) coach = rows[0];
+      }
+
+      if (!coach) continue;
+
+      const honor = att.status === 'hadir' ? parseFloat(coach.base_honor) : 0.0;
+      const record = {
+        coach_id: coachId,
+        date,
+        status: att.status,
+        time_in: att.time_in || null,
+        time_out: att.time_out || null,
+        honor_calculated: honor
+      };
+
+      if (useMemoryDb) {
+        record.id = memoryDb.coach_attendances.length + 1;
+        memoryDb.coach_attendances.push(record);
+      } else {
+        await pool.query('INSERT INTO coach_attendances (coach_id, date, time_in, time_out, status, honor_calculated) VALUES (?, ?, ?, ?, ?, ?)', [
+          record.coach_id, record.date, record.time_in, record.time_out, record.status, record.honor_calculated
+        ]);
+      }
+    }
+
+    res.json({ success: true, message: 'Coaches attendance submitted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 app.get('/api/reports/honor', authenticateToken, async (req, res) => {
   let list = [];
   if (useMemoryDb) {

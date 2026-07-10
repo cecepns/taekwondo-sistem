@@ -45,6 +45,7 @@ export const API_ENDPOINTS = {
     MEMBER_SUBMIT: "/attendance/members",
     MEMBER_LIST: "/attendance/members",
     COACH_SUBMIT: "/attendance/coach",
+    COACHES_SUBMIT: "/attendance/coaches",
   },
   PROGRAMS: {
     LIST: "/programs",

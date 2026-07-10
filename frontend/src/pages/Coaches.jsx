@@ -34,6 +34,9 @@ export default function Coaches() {
     time_out: '18:00'
   });
 
+  const [bulkAttDate, setBulkAttDate] = useState(new Date().toISOString().split('T')[0]);
+  const [bulkStatusMap, setBulkStatusMap] = useState({});
+
   const [isLoading, setIsLoading] = useState(false);
 
   const [filterMonth, setFilterMonth] = useState('');
@@ -168,6 +171,48 @@ export default function Coaches() {
     fetchHonorReports();
   }, []);
 
+  const initBulkAttendance = () => {
+    setBulkAttDate(new Date().toISOString().split('T')[0]);
+    const initialMap = {};
+    coaches.forEach(c => {
+      initialMap[c.id] = {
+        coach_id: c.id,
+        status: 'hadir',
+        time_in: '16:00',
+        time_out: '18:00'
+      };
+    });
+    setBulkStatusMap(initialMap);
+  };
+
+  useEffect(() => {
+    if (coaches.length > 0) {
+      const initialMap = {};
+      coaches.forEach(c => {
+        initialMap[c.id] = {
+          coach_id: c.id,
+          status: 'hadir',
+          time_in: '16:00',
+          time_out: '18:00'
+        };
+      });
+      setBulkStatusMap(prev => {
+        const updated = { ...prev };
+        coaches.forEach(c => {
+          if (!updated[c.id]) {
+            updated[c.id] = {
+              coach_id: c.id,
+              status: 'hadir',
+              time_in: '16:00',
+              time_out: '18:00'
+            };
+          }
+        });
+        return updated;
+      });
+    }
+  }, [coaches]);
+
   const startEditCoach = (c) => {
     setEditingCoach(c);
     setFormData({
@@ -256,7 +301,12 @@ export default function Coaches() {
 
   const handleAttSubmit = async (e) => {
     e.preventDefault();
-    if (!attData.coach_id || !attData.date) return toast.error('Harap pilih pelatih dan tanggal!');
+    if (editingAttendance && (!attData.coach_id || !attData.date)) {
+      return toast.error('Harap pilih pelatih dan tanggal!');
+    }
+    if (!editingAttendance && !bulkAttDate) {
+      return toast.error('Harap isi tanggal presensi!');
+    }
 
     setIsLoading(true);
     try {
@@ -264,10 +314,14 @@ export default function Coaches() {
       if (editingAttendance) {
         res = await request.put(API_ENDPOINTS.REPORTS.HONOR_DETAIL(editingAttendance.id), attData);
       } else {
-        res = await request.post(API_ENDPOINTS.ATTENDANCE.COACH_SUBMIT, attData);
+        const attendances = Object.values(bulkStatusMap);
+        res = await request.post(API_ENDPOINTS.ATTENDANCE.COACHES_SUBMIT, {
+          date: bulkAttDate,
+          attendances
+        });
       }
       if (res.success) {
-        toast.success(editingAttendance ? 'Presensi berhasil diperbarui!' : `Absensi dicatat! Honor yang diperoleh: Rp ${(res.honor_calculated || 0).toLocaleString()}`);
+        toast.success(editingAttendance ? 'Presensi berhasil diperbarui!' : 'Presensi pelatih berhasil disimpan!');
         setIsAttendanceOpen(false);
         setEditingAttendance(null);
         setAttData({
@@ -297,7 +351,10 @@ export default function Coaches() {
 
         <div className="flex items-center gap-2">
           <button 
-            onClick={() => setIsAttendanceOpen(true)}
+            onClick={() => {
+              initBulkAttendance();
+              setIsAttendanceOpen(true);
+            }}
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
           >
             <Clock size={14} /> Absen Latihan
@@ -410,6 +467,59 @@ export default function Coaches() {
             >
               <FileText size={13} /> PDF
             </button>
+          </div>
+        </div>
+
+        {/* Ringkasan Kalkulasi Honor Bulanan */}
+        <div className="bg-slate-950/25 p-4 rounded-xl border border-slate-800/80 space-y-3">
+          <h4 className="font-bold text-xs text-slate-250 flex items-center gap-1.5 uppercase tracking-wider">
+            <BadgeCent size={14} className="text-blue-400" /> Ringkasan Honor & Kehadiran Pelatih (Filter Aktif)
+          </h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase text-[10px] tracking-wider">
+                  <th className="py-2.5 px-3">Nama Pelatih</th>
+                  <th className="py-2.5 px-3">Tarif Honor Dasar</th>
+                  <th className="py-2.5 px-3 text-center">Total Kehadiran (Hadir)</th>
+                  <th className="py-2.5 px-3 text-right">Total Akumulasi Honor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/50">
+                {coaches.map(c => {
+                  const coachReports = filteredHonorReports.filter(r => r.coach_id === c.id);
+                  const totalHadir = coachReports.filter(r => r.status === 'hadir').length;
+                  const totalHonor = coachReports.reduce((sum, r) => sum + parseFloat(r.honor_calculated || 0), 0);
+                  return (
+                    <tr key={c.id} className="hover:bg-slate-800/10 transition-colors">
+                      <td className="py-2.5 px-3 font-semibold text-slate-200">{c.name}</td>
+                      <td className="py-2.5 px-3 text-slate-450">Rp {parseFloat(c.base_honor).toLocaleString()} / sesi</td>
+                      <td className="py-2.5 px-3 text-center text-slate-300 font-bold">{totalHadir} Sesi</td>
+                      <td className="py-2.5 px-3 text-right font-black text-emerald-450 font-mono">Rp {totalHonor.toLocaleString()}</td>
+                    </tr>
+                  );
+                })}
+                {coaches.length === 0 && (
+                  <tr>
+                    <td colSpan="4" className="py-4 text-center text-slate-500 font-medium">Tidak ada pelatih terdaftar</td>
+                  </tr>
+                )}
+                {coaches.length > 0 && (
+                  <tr className="font-bold border-t border-slate-800 bg-slate-900/40">
+                    <td colSpan="2" className="py-2.5 px-3 text-slate-300 uppercase text-[10px] tracking-wider">Total Akumulasi Seluruh Pelatih</td>
+                    <td className="py-2.5 px-3 text-center text-slate-200 font-black">
+                      {coaches.reduce((sum, c) => sum + filteredHonorReports.filter(r => r.coach_id === c.id && r.status === 'hadir').length, 0)} Sesi
+                    </td>
+                    <td className="py-2.5 px-3 text-right text-emerald-300 font-black font-mono">
+                      Rp {coaches.reduce((sum, c) => {
+                        const coachReports = filteredHonorReports.filter(r => r.coach_id === c.id);
+                        return sum + coachReports.reduce((s, r) => s + parseFloat(r.honor_calculated || 0), 0);
+                      }, 0).toLocaleString()}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -546,70 +656,161 @@ export default function Coaches() {
         }} 
         title={editingAttendance ? "Edit Presensi Pelatih" : "Catat Absensi Pelatih"}
       >
-        <form onSubmit={handleAttSubmit} className="space-y-5 text-xs text-slate-355">
-          <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Pilih Pelatih *</label>
-            <select
-              value={attData.coach_id}
-              onChange={(e) => setAttData(prev => ({ ...prev, coach_id: e.target.value }))}
-              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
-              required
-            >
-              <option value="">Pilih Pelatih</option>
-              {coaches.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
+        <form onSubmit={handleAttSubmit} className="space-y-5 text-xs text-slate-300">
+          {editingAttendance ? (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-700">Pilih Pelatih *</label>
+                <select
+                  value={attData.coach_id}
+                  onChange={(e) => setAttData(prev => ({ ...prev, coach_id: e.target.value }))}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-medium"
+                  required
+                  disabled
+                >
+                  <option value="">Pilih Pelatih</option>
+                  {coaches.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Tanggal *</label>
-              <input
-                type="date"
-                value={attData.date}
-                onChange={(e) => setAttData(prev => ({ ...prev, date: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Status Absen *</label>
-              <select
-                value={attData.status}
-                onChange={(e) => setAttData(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
-              >
-                <option value="hadir">Hadir (Dapat Honor)</option>
-                <option value="izin">Izin</option>
-                <option value="sakit">Sakit</option>
-                <option value="alpha">Alpha</option>
-              </select>
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Tanggal *</label>
+                  <input
+                    type="date"
+                    value={attData.date}
+                    onChange={(e) => setAttData(prev => ({ ...prev, date: e.target.value }))}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-medium"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Status Absen *</label>
+                  <select
+                    value={attData.status}
+                    onChange={(e) => setAttData(prev => ({ ...prev, status: e.target.value }))}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-medium"
+                  >
+                    <option value="hadir">Hadir (Dapat Honor)</option>
+                    <option value="izin">Izin</option>
+                    <option value="sakit">Sakit</option>
+                    <option value="alpha">Alpha</option>
+                  </select>
+                </div>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Jam Masuk</label>
-              <input
-                type="time"
-                value={attData.time_in}
-                onChange={(e) => setAttData(prev => ({ ...prev, time_in: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Jam Masuk</label>
+                  <input
+                    type="time"
+                    value={attData.time_in}
+                    onChange={(e) => setAttData(prev => ({ ...prev, time_in: e.target.value }))}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-medium"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-semibold text-slate-700">Jam Keluar</label>
+                  <input
+                    type="time"
+                    value={attData.time_out}
+                    onChange={(e) => setAttData(prev => ({ ...prev, time_out: e.target.value }))}
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-medium"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Jam Keluar</label>
-              <input
-                type="time"
-                value={attData.time_out}
-                onChange={(e) => setAttData(prev => ({ ...prev, time_out: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
-              />
-            </div>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="font-semibold text-slate-700 text-xs">Tanggal Latihan *</label>
+                <input
+                  type="date"
+                  value={bulkAttDate}
+                  onChange={(e) => setBulkAttDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-medium"
+                  required
+                />
+              </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-850 pt-4">
+              <div className="border-t border-slate-200 pt-3 space-y-3">
+                <h4 className="font-bold text-slate-850 text-xs">Daftar Pelatih ({coaches.length})</h4>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                  {coaches.map(c => {
+                    const mapEntry = bulkStatusMap[c.id] || { status: 'hadir', time_in: '16:00', time_out: '18:00' };
+                    return (
+                      <div key={c.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-all hover:border-slate-300">
+                        <div>
+                          <div className="font-semibold text-slate-800 text-xs">{c.name}</div>
+                          <div className="text-[10px] text-slate-500 font-medium">Tarif: Rp {parseFloat(c.base_honor).toLocaleString()} / sesi</div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                          {/* Status buttons */}
+                          <div className="flex items-center gap-1">
+                            {['hadir', 'izin', 'sakit', 'alpha'].map(status => (
+                              <button
+                                key={status}
+                                type="button"
+                                onClick={() => {
+                                  setBulkStatusMap(prev => ({
+                                    ...prev,
+                                    [c.id]: { ...prev[c.id], status }
+                                  }));
+                                }}
+                                className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${
+                                  mapEntry.status === status
+                                    ? status === 'hadir' ? 'bg-green-600 text-white shadow-sm' :
+                                      status === 'izin' ? 'bg-blue-600 text-white shadow-sm' :
+                                      status === 'sakit' ? 'bg-yellow-500 text-slate-950 shadow-sm' : 'bg-red-600 text-white shadow-sm'
+                                    : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'
+                                }`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Time fields (only for 'hadir') */}
+                          {mapEntry.status === 'hadir' && (
+                            <div className="flex items-center gap-1.5 text-[10px]">
+                              <input
+                                type="time"
+                                value={mapEntry.time_in || '16:00'}
+                                onChange={(e) => {
+                                  setBulkStatusMap(prev => ({
+                                    ...prev,
+                                    [c.id]: { ...prev[c.id], time_in: e.target.value }
+                                  }));
+                                }}
+                                className="w-16 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-800 text-center focus:border-blue-500 font-semibold"
+                              />
+                              <span className="text-slate-400">s/d</span>
+                              <input
+                                type="time"
+                                value={mapEntry.time_out || '18:00'}
+                                onChange={(e) => {
+                                  setBulkStatusMap(prev => ({
+                                    ...prev,
+                                    [c.id]: { ...prev[c.id], time_out: e.target.value }
+                                  }));
+                                }}
+                                className="w-16 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-slate-800 text-center focus:border-blue-500 font-semibold"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={() => { 
@@ -617,13 +818,13 @@ export default function Coaches() {
                 setEditingAttendance(null); 
                 setAttData({ coach_id: '', date: new Date().toISOString().split('T')[0], status: 'hadir', time_in: '16:00', time_out: '18:00' }); 
               }}
-              className="px-4 py-2 rounded-xl bg-slate-850 text-slate-300"
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow-lg"
+              className="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold shadow-lg hover:bg-blue-500 transition-colors text-xs"
             >
               {editingAttendance ? 'Simpan Perubahan' : 'Simpan Presensi'}
             </button>

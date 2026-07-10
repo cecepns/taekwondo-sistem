@@ -733,33 +733,33 @@ export default function Championships() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Overweight List */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-amber-500 font-bold uppercase text-[11px] px-1 w-fit rounded">
-                  <ShieldAlert size={14} /> OVERWEIGHT
+                <div className="flex items-center gap-1.5 text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase w-fit">
+                  <ShieldAlert size={13} /> OVERWEIGHT
                 </div>
-                <div className="border border-slate-800 rounded-lg overflow-hidden bg-[#1a1a1a]">
-                  <table className="w-full text-left text-[11px] text-slate-300">
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                  <table className="w-full text-left text-[11px] text-slate-600">
                     <thead>
-                      <tr className="border-b border-slate-700 text-slate-300/80">
-                        <th className="py-2.5 px-3 font-medium">Nama</th>
-                        <th className="py-2.5 px-3 text-center font-medium">Selisih</th>
-                        <th className="py-2.5 px-3 text-right font-medium">jenis kelamin</th>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold uppercase text-[10px]">
+                        <th className="py-2.5 px-3">Nama</th>
+                        <th className="py-2.5 px-3 text-center">Selisih</th>
+                        <th className="py-2.5 px-3 text-right">Jenis Kelamin</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800">
+                    <tbody className="divide-y divide-slate-105">
                       {participants.filter(p => p.weigh_in_status === 'overweight').map(p => {
                         const selisih = (parseFloat(p.weigh_in_weight) - parseFloat(p.class_max_weight)).toFixed(2);
                         return (
-                          <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                            <td className="py-2.5 px-3 flex items-center gap-1.5 text-red-500 font-semibold uppercase">
-                              <span className="text-red-500 font-black text-sm leading-none">↑</span> {p.member_name}
+                          <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-2.5 px-3 flex items-center gap-1.5 text-rose-600 font-bold uppercase">
+                              <span className="text-rose-500 text-xs font-black">↑</span> {p.member_name}
                             </td>
-                            <td className="py-2.5 px-3 text-center">{selisih}</td>
-                            <td className="py-2.5 px-3 text-right uppercase">{p.class_gender === 'L' ? 'PUTRA' : p.class_gender === 'P' ? 'PUTRI' : p.member_gender === 'L' ? 'PUTRA' : 'PUTRI'}</td>
+                            <td className="py-2.5 px-3 text-center font-mono font-semibold text-slate-700">{selisih} kg</td>
+                            <td className="py-2.5 px-3 text-right text-slate-500 uppercase">{p.class_gender === 'L' ? 'PUTRA' : p.class_gender === 'P' ? 'PUTRI' : p.member_gender === 'L' ? 'PUTRA' : 'PUTRI'}</td>
                           </tr>
                         );
                       })}
                       {participants.filter(p => p.weigh_in_status === 'overweight').length === 0 && (
-                         <tr><td colSpan="3" className="py-6 text-center text-slate-500">Tidak ada atlet overweight</td></tr>
+                         <tr><td colSpan="3" className="py-6 text-center text-slate-400 font-medium">Tidak ada atlet overweight</td></tr>
                       )}
                     </tbody>
                   </table>
@@ -768,33 +768,33 @@ export default function Championships() {
 
               {/* Underweight List */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-yellow-500 font-bold uppercase text-[11px] px-1 w-fit rounded">
-                  <ShieldAlert size={14} /> UNDERWEIGHT
+                <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase w-fit">
+                  <ShieldAlert size={13} /> UNDERWEIGHT
                 </div>
-                <div className="border border-slate-800 rounded-lg overflow-hidden bg-[#1a1a1a]">
-                  <table className="w-full text-left text-[11px] text-slate-300">
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                  <table className="w-full text-left text-[11px] text-slate-600">
                     <thead>
-                      <tr className="border-b border-slate-700 text-slate-300/80">
-                        <th className="py-2.5 px-3 font-medium">Nama</th>
-                        <th className="py-2.5 px-3 text-center font-medium">Selisih</th>
-                        <th className="py-2.5 px-3 text-right font-medium">jenis kelamin</th>
+                      <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-semibold uppercase text-[10px]">
+                        <th className="py-2.5 px-3">Nama</th>
+                        <th className="py-2.5 px-3 text-center">Selisih</th>
+                        <th className="py-2.5 px-3 text-right">Jenis Kelamin</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800">
+                    <tbody className="divide-y divide-slate-105">
                       {participants.filter(p => p.weigh_in_status === 'underweight').map(p => {
                         const selisih = (parseFloat(p.class_min_weight) - parseFloat(p.weigh_in_weight)).toFixed(2);
                         return (
-                          <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                            <td className="py-2.5 px-3 flex items-center gap-1.5 text-yellow-500 font-semibold uppercase">
-                              <span className="text-yellow-500 font-black text-sm leading-none">↓</span> {p.member_name}
+                          <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-2.5 px-3 flex items-center gap-1.5 text-amber-600 font-bold uppercase">
+                              <span className="text-amber-500 text-xs font-black">↓</span> {p.member_name}
                             </td>
-                            <td className="py-2.5 px-3 text-center">{selisih}</td>
-                            <td className="py-2.5 px-3 text-right uppercase">{p.class_gender === 'L' ? 'PUTRA' : p.class_gender === 'P' ? 'PUTRI' : p.member_gender === 'L' ? 'PUTRA' : 'PUTRI'}</td>
+                            <td className="py-2.5 px-3 text-center font-mono font-semibold text-slate-700">{selisih} kg</td>
+                            <td className="py-2.5 px-3 text-right text-slate-500 uppercase">{p.class_gender === 'L' ? 'PUTRA' : p.class_gender === 'P' ? 'PUTRI' : p.member_gender === 'L' ? 'PUTRA' : 'PUTRI'}</td>
                           </tr>
                         );
                       })}
                       {participants.filter(p => p.weigh_in_status === 'underweight').length === 0 && (
-                         <tr><td colSpan="3" className="py-6 text-center text-slate-500">Tidak ada atlet underweight</td></tr>
+                         <tr><td colSpan="3" className="py-6 text-center text-slate-400 font-medium">Tidak ada atlet underweight</td></tr>
                       )}
                     </tbody>
                   </table>
