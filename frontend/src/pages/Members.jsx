@@ -7,7 +7,7 @@ import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 import {
   Search, Plus, Eye, Edit, Trash2, ShieldAlert,
-  FileText, Download, Printer, User, Phone, MapPin, Calendar, HelpCircle
+  FileText, Download, Printer, User, Phone, MapPin, Calendar, HelpCircle, Home
 } from 'lucide-react';
 
 export default function Members() {
@@ -39,6 +39,7 @@ export default function Members() {
     parent_name: '',
     whatsapp: '',
     school: '',
+    dojang: '',
     belt_id: '',
     weight: '',
     height: '',
@@ -174,6 +175,7 @@ export default function Members() {
           parent_name: m.parent_name || '',
           whatsapp: m.whatsapp || '',
           school: m.school || '',
+          dojang: m.dojang || '',
           belt_id: m.belt_id || '',
           weight: m.weight || '',
           height: m.height || '',
@@ -236,6 +238,7 @@ export default function Members() {
       parent_name: '',
       whatsapp: '',
       school: '',
+      dojang: '',
       belt_id: '',
       weight: '',
       height: '',
@@ -410,6 +413,12 @@ export default function Members() {
                           <span className="truncate w-40">{member.school}</span>
                         </div>
                       )}
+                      {member.dojang && (
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-400">
+                          <Home size={12} className="text-blue-500" />
+                          <span className="truncate w-40">{member.dojang}</span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Status badges */}
@@ -582,6 +591,18 @@ export default function Members() {
                 type="text"
                 value={formData.school}
                 onChange={(e) => setFormData(prev => ({ ...prev, school: e.target.value }))}
+                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+
+            {/* Dojang */}
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-300">Dojang / Tempat Latihan</label>
+              <input
+                type="text"
+                placeholder="Contoh: CITAPEN / DADAHA"
+                value={formData.dojang}
+                onChange={(e) => setFormData(prev => ({ ...prev, dojang: e.target.value }))}
                 className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
               />
             </div>

@@ -23,6 +23,8 @@ export default function Dues({ user, settings }) {
   const [search, setSearch] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
+  const [filterDojang, setFilterDojang] = useState('');
+  const [filterStatus, setFilterStatus] = useState(''); // '', 'sudah_bayar', 'belum_bayar'
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
@@ -49,25 +51,84 @@ export default function Dues({ user, settings }) {
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
 
+  // Helper to filter dues dynamically
+  const getFilteredDuesList = (allDuesTransactions) => {
+    let filtered = [];
+
+    if (filterStatus === 'belum_bayar') {
+      const targetMonth = filterMonth || String(new Date().getMonth() + 1);
+      const targetYear = filterYear || new Date().getFullYear();
+
+      let activeMembers = members.filter(m => m.status === 'aktif');
+
+      if (search) {
+        activeMembers = activeMembers.filter(m =>
+          m.name.toLowerCase().includes(search.toLowerCase()) ||
+          m.member_number.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+
+      if (filterDojang) {
+        activeMembers = activeMembers.filter(m => m.dojang === filterDojang);
+      }
+
+      filtered = activeMembers.filter(m => {
+        const hasPaid = allDuesTransactions.some(d =>
+          parseInt(d.member_id) === parseInt(m.id) &&
+          parseInt(d.month) === parseInt(targetMonth) &&
+          parseInt(d.year) === parseInt(targetYear) &&
+          d.status === 'sudah_bayar'
+        );
+        return !hasPaid;
+      }).map(m => ({
+        id: `unpaid-${m.id}-${targetMonth}-${targetYear}`,
+        member_id: m.id,
+        member_name: m.name,
+        member_number: m.member_number,
+        member_dojang: m.dojang,
+        month: targetMonth,
+        year: targetYear,
+        amount: parseFloat(settings?.default_dues_amount || 85000),
+        payment_date: '-',
+        method: '-',
+        status: 'belum_bayar',
+        notes: 'Belum dibayar'
+      }));
+
+    } else {
+      filtered = allDuesTransactions;
+
+      if (search) {
+        filtered = filtered.filter(d =>
+          d.member_name.toLowerCase().includes(search.toLowerCase()) ||
+          d.member_number.toLowerCase().includes(search.toLowerCase())
+        );
+      }
+
+      if (filterMonth) {
+        filtered = filtered.filter(d => parseInt(d.month) === parseInt(filterMonth));
+      }
+      if (filterYear) {
+        filtered = filtered.filter(d => parseInt(d.year) === parseInt(filterYear));
+      }
+
+      if (filterDojang) {
+        filtered = filtered.filter(d => d.member_dojang === filterDojang);
+      }
+
+      if (filterStatus === 'sudah_bayar') {
+        filtered = filtered.filter(d => d.status === 'sudah_bayar');
+      }
+    }
+    return filtered;
+  };
+
   const fetchDues = async () => {
     setIsLoading(true);
     try {
       const res = await request.get(API_ENDPOINTS.DUES.LIST);
       if (res.success) {
-        let filtered = res.data || [];
-        if (search) {
-          filtered = filtered.filter(d =>
-            d.member_name.toLowerCase().includes(search.toLowerCase())
-          );
-        }
-
-        if (filterMonth) {
-          filtered = filtered.filter(d => parseInt(d.month) === parseInt(filterMonth));
-        }
-        if (filterYear) {
-          filtered = filtered.filter(d => parseInt(d.year) === parseInt(filterYear));
-        }
-
+        const filtered = getFilteredDuesList(res.data || []);
         const offset = (page - 1) * limit;
         setDues(filtered.slice(offset, offset + limit));
         setTotal(filtered.length);
@@ -101,7 +162,7 @@ export default function Dues({ user, settings }) {
     } else {
       fetchUnpaidDues();
     }
-  }, [page, limit, search, filterMonth, filterYear, activeTab]);
+  }, [page, limit, search, filterMonth, filterYear, filterDojang, filterStatus, activeTab, members.length]);
 
   useEffect(() => {
     async function loadMembers() {
@@ -386,18 +447,7 @@ export default function Dues({ user, settings }) {
       try {
         const res = await request.get(API_ENDPOINTS.DUES.LIST);
         if (res.success) {
-          let list = res.data || [];
-          if (search) {
-            list = list.filter(d =>
-              d.member_name.toLowerCase().includes(search.toLowerCase())
-            );
-          }
-          if (filterMonth) {
-            list = list.filter(d => parseInt(d.month) === parseInt(filterMonth));
-          }
-          if (filterYear) {
-            list = list.filter(d => parseInt(d.year) === parseInt(filterYear));
-          }
+          const list = getFilteredDuesList(res.data || []);
 
           const headers = ['No', 'Nama Anggota', 'No Anggota', 'Iuran Bulan', 'Tahun', 'Tanggal Bayar', 'Nominal', 'Metode Bayar', 'Status'];
           const rows = list.map((d, index) => [
@@ -406,7 +456,7 @@ export default function Dues({ user, settings }) {
             d.member_number,
             getMonthName(d.month),
             d.year,
-            new Date(d.payment_date).toLocaleDateString('id-ID'),
+            d.payment_date !== '-' ? new Date(d.payment_date).toLocaleDateString('id-ID') : '-',
             `Rp ${parseFloat(d.amount).toLocaleString()}`,
             d.method.toUpperCase(),
             d.status.toUpperCase()
@@ -435,18 +485,7 @@ export default function Dues({ user, settings }) {
       try {
         const res = await request.get(API_ENDPOINTS.DUES.LIST);
         if (res.success) {
-          let list = res.data || [];
-          if (search) {
-            list = list.filter(d =>
-              d.member_name.toLowerCase().includes(search.toLowerCase())
-            );
-          }
-          if (filterMonth) {
-            list = list.filter(d => parseInt(d.month) === parseInt(filterMonth));
-          }
-          if (filterYear) {
-            list = list.filter(d => parseInt(d.year) === parseInt(filterYear));
-          }
+          const list = getFilteredDuesList(res.data || []);
 
           const printWindow = window.open('', '_blank');
           const titleStr = `Laporan Iuran Keuangan - ${filterMonth ? getMonthName(parseInt(filterMonth)) : 'Semua Bulan'} ${filterYear}`;
@@ -493,14 +532,14 @@ export default function Dues({ user, settings }) {
                         <td style="font-weight: 500;">${d.member_name}</td>
                         <td>${d.member_number}</td>
                         <td>${getMonthName(d.month)} ${d.year}</td>
-                        <td>${new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                        <td>${d.payment_date !== '-' ? new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
                         <td style="text-transform: uppercase;">${d.method}</td>
                         <td class="status status-${d.status}">${d.status.replace('_', ' ')}</td>
                         <td class="text-right">Rp ${parseFloat(d.amount).toLocaleString()}</td>
                       </tr>
                     `).join('')}
                     <tr>
-                      <td colspan="7" class="text-right" style="padding-top: 15px; border-bottom: none;">TOTAL PENERIMAAN:</td>
+                      <td colspan="7" class="text-right" style="padding-top: 15px; border-bottom: none;">${filterStatus === 'belum_bayar' ? 'TOTAL TAGIHAN BELUM DIBAYAR:' : 'TOTAL PENERIMAAN:'}</td>
                       <td class="text-right" style="padding-top: 15px; border-bottom: none; font-size: 13px; color: #1e293b;">
                         Rp ${list.reduce((sum, d) => sum + parseFloat(d.amount), 0).toLocaleString()}
                       </td>
@@ -520,7 +559,7 @@ export default function Dues({ user, settings }) {
         }
       } catch (err) {
         console.error(err);
-        toast.error('Gagal mencetak PDF');
+        toast.error('Gagal mendownload PDF');
       }
     };
     runDownload();
@@ -572,9 +611,14 @@ export default function Dues({ user, settings }) {
     })
   };
 
-  const filteredUnpaidDues = unpaidDues.filter(u =>
-    u.member_name.toLowerCase().includes(unpaidSearch.toLowerCase())
-  );
+  const dojangsList = [...new Set(members.map(m => m.dojang).filter(Boolean))];
+
+  const filteredUnpaidDues = unpaidDues.filter(u => {
+    const matchesSearch = u.member_name.toLowerCase().includes(unpaidSearch.toLowerCase()) || 
+                          u.member_number.toLowerCase().includes(unpaidSearch.toLowerCase());
+    const matchesDojang = filterDojang ? u.dojang === filterDojang : true;
+    return matchesSearch && matchesDojang;
+  });
 
   return (
     <div className="space-y-6">
@@ -641,9 +685,45 @@ export default function Dues({ user, settings }) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-start md:justify-end">
+              {/* Dojang Filter */}
+              <select
+                value={filterDojang}
+                onChange={(e) => {
+                  setFilterDojang(e.target.value);
+                  setPage(1);
+                }}
+                className="flex-1 md:flex-initial min-w-[120px] px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-655 focus:outline-none"
+              >
+                <option value="">Semua Dojang</option>
+                {dojangsList.map(dj => (
+                  <option key={dj} value={dj}>{dj}</option>
+                ))}
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={filterStatus}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFilterStatus(val);
+                  setPage(1);
+                  if (val === 'belum_bayar' && !filterMonth) {
+                    setFilterMonth(String(new Date().getMonth() + 1));
+                  }
+                }}
+                className="flex-1 md:flex-initial min-w-[125px] px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-655 focus:outline-none"
+              >
+                <option value="">Status: Semua</option>
+                <option value="sudah_bayar">Sudah Bayar</option>
+                <option value="belum_bayar">Belum Bayar</option>
+              </select>
+
               <select
                 value={filterMonth}
-                onChange={(e) => setFilterMonth(e.target.value)}
+                onChange={(e) => {
+                  setFilterMonth(e.target.value);
+                  setPage(1);
+                }}
                 className="flex-1 md:flex-initial min-w-[110px] px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-655 focus:outline-none"
               >
                 <option value="">Semua Bulan</option>
@@ -719,52 +799,71 @@ export default function Dues({ user, settings }) {
                           {getMonthName(d.month)} {d.year}
                         </td>
                         <td className="p-4 text-slate-500 whitespace-nowrap">
-                          {new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          {d.payment_date !== '-' 
+                            ? new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            : '-'
+                          }
                         </td>
                         <td className="p-4 text-slate-800 font-semibold whitespace-nowrap">
                           Rp {parseFloat(d.amount).toLocaleString()}
                         </td>
                         <td className="p-4 whitespace-nowrap">
-                          <span className="px-2.5 py-0.5 rounded bg-blue-50 border border-blue-100 text-blue-700 uppercase text-[10px] font-bold">
-                            {d.method}
+                          <span className={`px-2.5 py-0.5 rounded uppercase text-[10px] font-bold ${d.status === 'belum_bayar' ? 'bg-red-50 border border-red-100 text-red-650' : 'bg-blue-50 border border-blue-100 text-blue-700'}`}>
+                            {d.status === 'belum_bayar' ? 'Belum Bayar' : d.method}
                           </span>
                         </td>
                         <td className="p-4">
                           <div className="flex items-center justify-center gap-2">
-                            {d.attachment && (
-                              <a
-                                href={d.attachment}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-semibold transition-colors"
+                            {d.status === 'belum_bayar' ? (
+                              <button
+                                onClick={() => handlePayUnpaid({
+                                  member_id: d.member_id,
+                                  member_name: d.member_name,
+                                  member_number: d.member_number,
+                                  unpaid_months: [{ month: parseInt(d.month), year: parseInt(d.year) }]
+                                })}
+                                className="px-2.5 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[10px] transition-all shadow-sm"
                               >
-                                Lihat Bukti
-                              </a>
+                                Bayar / Lunasi
+                              </button>
+                            ) : (
+                              <>
+                                {d.attachment && (
+                                  <a
+                                    href={d.attachment}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-semibold transition-colors"
+                                  >
+                                    Lihat Bukti
+                                  </a>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    setSelectedReceipt(d);
+                                    setIsReceiptOpen(true);
+                                  }}
+                                  className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-colors inline-flex items-center gap-1 text-[10px] font-medium"
+                                  title="Print Receipt"
+                                >
+                                  <Printer size={13} /> Kuitansi
+                                </button>
+                                <button
+                                  onClick={() => startEditDue(d)}
+                                  className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-655 border border-slate-200 hover:text-blue-600 transition-colors"
+                                  title="Edit"
+                                >
+                                  <Edit size={13} />
+                                </button>
+                                <button
+                                  onClick={() => handleDueDelete(d.id)}
+                                  className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-655 border border-slate-200 hover:text-red-600 transition-colors"
+                                  title="Hapus"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </>
                             )}
-                            <button
-                              onClick={() => {
-                                setSelectedReceipt(d);
-                                setIsReceiptOpen(true);
-                              }}
-                              className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-colors inline-flex items-center gap-1 text-[10px] font-medium"
-                              title="Print Receipt"
-                            >
-                              <Printer size={13} /> Kuitansi
-                            </button>
-                            <button
-                              onClick={() => startEditDue(d)}
-                              className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-650 border border-slate-200 hover:text-blue-600 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit size={13} />
-                            </button>
-                            <button
-                              onClick={() => handleDueDelete(d.id)}
-                              className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-650 border border-slate-200 hover:text-red-600 transition-colors"
-                              title="Hapus"
-                            >
-                              <Trash2 size={13} />
-                            </button>
                           </div>
                         </td>
                       </tr>
@@ -790,19 +889,31 @@ export default function Dues({ user, settings }) {
       ) : (
         <>
           {/* Search bar for unpaid list */}
-          {/* Search bar for unpaid list */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center shadow-sm">
-            <div className="relative w-full md:w-80">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
-                <Search size={16} />
-              </span>
-              <input
-                type="text"
-                placeholder="Cari nama anggota belum bayar..."
-                value={unpaidSearch}
-                onChange={(e) => setUnpaidSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-850 text-xs placeholder:text-slate-450 focus:outline-none focus:border-blue-500"
-              />
+            <div className="flex flex-col md:flex-row gap-2.5 w-full md:w-auto items-stretch md:items-center">
+              <div className="relative w-full md:w-80">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                  <Search size={16} />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Cari nama anggota belum bayar..."
+                  value={unpaidSearch}
+                  onChange={(e) => setUnpaidSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-850 text-xs placeholder:text-slate-450 focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <select
+                value={filterDojang}
+                onChange={(e) => setFilterDojang(e.target.value)}
+                className="w-full md:w-auto px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-655 focus:outline-none"
+              >
+                <option value="">Semua Dojang</option>
+                {dojangsList.map(dj => (
+                  <option key={dj} value={dj}>{dj}</option>
+                ))}
+              </select>
             </div>
             <div className="text-slate-600 text-xs flex items-center justify-start md:justify-end gap-1.5">
               <AlertTriangle size={15} className="text-yellow-600 flex-shrink-0" />

@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS `members` (
   `parent_name` VARCHAR(100) DEFAULT '',
   `whatsapp` VARCHAR(20) DEFAULT '',
   `school` VARCHAR(100) DEFAULT '',
+  `dojang` VARCHAR(100) DEFAULT NULL,
   `belt_id` INT,
   `weight` DECIMAL(5,2) DEFAULT 0.00,
   `height` DECIMAL(5,2) DEFAULT 0.00,

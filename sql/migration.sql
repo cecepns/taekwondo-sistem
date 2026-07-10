@@ -27,3 +27,4 @@ CREATE TABLE IF NOT EXISTS `training_session_items` (
   FOREIGN KEY (`session_id`) REFERENCES `training_sessions`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`program_id`) REFERENCES `training_programs`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

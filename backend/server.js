@@ -631,6 +631,7 @@ app.get('/api/members', async (req, res) => {
   const search = req.query.search || '';
   const beltId = req.query.belt_id || '';
   const status = req.query.status || '';
+  const dojang = req.query.dojang || '';
   const sortBy = req.query.sortBy || 'name';
   const sortOrder = req.query.sortOrder || 'ASC';
 
@@ -662,8 +663,9 @@ app.get('/api/members', async (req, res) => {
 
     const matchesBelt = beltId ? m.belt_id == beltId : true;
     const matchesStatus = status ? m.status === status : true;
+    const matchesDojang = dojang ? m.dojang === dojang : true;
 
-    return matchesSearch && matchesBelt && matchesStatus;
+    return matchesSearch && matchesBelt && matchesStatus && matchesDojang;
   });
 
   // Sorting
@@ -736,7 +738,7 @@ app.post('/api/members', authenticateToken, checkRole(['super_admin', 'admin']),
   { name: 'doc_kk', maxCount: 1 },
   { name: 'doc_photo', maxCount: 1 }
 ]), async (req, res) => {
-  const { name, gender, birth_place, birth_date, parent_name, whatsapp, school, belt_id, weight, height, blood_type, address, status, joined_date, notes, class_ids } = req.body;
+  const { name, gender, birth_place, birth_date, parent_name, whatsapp, school, dojang, belt_id, weight, height, blood_type, address, status, joined_date, notes, class_ids } = req.body;
 
   // Compute auto age
   const birthYear = new Date(birth_date).getFullYear();
@@ -764,6 +766,7 @@ app.post('/api/members', authenticateToken, checkRole(['super_admin', 'admin']),
     parent_name,
     whatsapp,
     school,
+    dojang: dojang || '',
     belt_id: belt_id ? parseInt(belt_id) : null,
     weight: weight ? parseFloat(weight) : 0.0,
     height: height ? parseFloat(height) : 0.0,
@@ -791,11 +794,11 @@ app.post('/api/members', authenticateToken, checkRole(['super_admin', 'admin']),
     }
   } else {
     const [result] = await pool.query(`
-      INSERT INTO members (member_number, name, photo, gender, birth_place, birth_date, parent_name, whatsapp, school, belt_id, weight, height, blood_type, address, status, joined_date, notes, doc_akta, doc_kk, doc_photo)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO members (member_number, name, photo, gender, birth_place, birth_date, parent_name, whatsapp, school, dojang, belt_id, weight, height, blood_type, address, status, joined_date, notes, doc_akta, doc_kk, doc_photo)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       memberData.member_number, memberData.name, memberData.photo, memberData.gender, memberData.birth_place, memberData.birth_date,
-      memberData.parent_name, memberData.whatsapp, memberData.school, memberData.belt_id, memberData.weight, memberData.height,
+      memberData.parent_name, memberData.whatsapp, memberData.school, memberData.dojang, memberData.belt_id, memberData.weight, memberData.height,
       memberData.blood_type, memberData.address, memberData.status, memberData.joined_date, memberData.notes,
       memberData.doc_akta, memberData.doc_kk, memberData.doc_photo
     ]);
@@ -820,7 +823,7 @@ app.put('/api/members/:id', authenticateToken, checkRole(['super_admin', 'admin'
   { name: 'doc_photo', maxCount: 1 }
 ]), async (req, res) => {
   const id = parseInt(req.params.id);
-  const { name, gender, birth_place, birth_date, parent_name, whatsapp, school, belt_id, weight, height, blood_type, address, status, joined_date, notes, class_ids } = req.body;
+  const { name, gender, birth_place, birth_date, parent_name, whatsapp, school, dojang, belt_id, weight, height, blood_type, address, status, joined_date, notes, class_ids } = req.body;
 
   let existing = null;
   if (useMemoryDb) {
@@ -840,6 +843,7 @@ app.put('/api/members/:id', authenticateToken, checkRole(['super_admin', 'admin'
     parent_name: parent_name || existing.parent_name,
     whatsapp: whatsapp || existing.whatsapp,
     school: school || existing.school,
+    dojang: dojang !== undefined ? dojang : existing.dojang,
     belt_id: belt_id ? parseInt(belt_id) : existing.belt_id,
     weight: weight ? parseFloat(weight) : existing.weight,
     height: height ? parseFloat(height) : existing.height,
@@ -870,12 +874,12 @@ app.put('/api/members/:id', authenticateToken, checkRole(['super_admin', 'admin'
     await pool.query(`
       UPDATE members SET 
         name = ?, gender = ?, birth_place = ?, birth_date = ?, parent_name = ?, whatsapp = ?, 
-        school = ?, belt_id = ?, weight = ?, height = ?, blood_type = ?, address = ?, 
+        school = ?, dojang = ?, belt_id = ?, weight = ?, height = ?, blood_type = ?, address = ?, 
         status = ?, joined_date = ?, notes = ?, photo = ?, doc_akta = ?, doc_kk = ?, doc_photo = ?
       WHERE id = ?
     `, [
       updatedData.name, updatedData.gender, updatedData.birth_place, updatedData.birth_date, updatedData.parent_name, updatedData.whatsapp,
-      updatedData.school, updatedData.belt_id, updatedData.weight, updatedData.height, updatedData.blood_type, updatedData.address,
+      updatedData.school, updatedData.dojang, updatedData.belt_id, updatedData.weight, updatedData.height, updatedData.blood_type, updatedData.address,
       updatedData.status, updatedData.joined_date, updatedData.notes, updatedData.photo, updatedData.doc_akta, updatedData.doc_kk, updatedData.doc_photo,
       id
     ]);
@@ -912,11 +916,11 @@ app.get('/api/dues', async (req, res) => {
   if (useMemoryDb) {
     list = memoryDb.dues.map(d => {
       const member = memoryDb.members.find(m => m.id === d.member_id);
-      return { ...d, member_name: member ? member.name : 'Unknown Member', member_number: member ? member.member_number : '' };
+      return { ...d, member_name: member ? member.name : 'Unknown Member', member_number: member ? member.member_number : '', member_dojang: member ? member.dojang : '' };
     });
   } else {
     [list] = await pool.query(`
-      SELECT d.*, m.name as member_name, m.member_number 
+      SELECT d.*, m.name as member_name, m.member_number, m.dojang as member_dojang 
       FROM dues d 
       JOIN members m ON d.member_id = m.id
       ORDER BY d.year DESC, d.month DESC
@@ -1857,7 +1861,7 @@ app.get('/api/dues/unpaid', authenticateToken, async (req, res) => {
     if (useMemoryDb) {
       allMembers = memoryDb.members.filter(m => m.status === 'aktif');
     } else {
-      [allMembers] = await pool.query('SELECT id, name, member_number, joined_date, status FROM members WHERE status = "aktif"');
+      [allMembers] = await pool.query('SELECT id, name, member_number, joined_date, status, dojang FROM members WHERE status = "aktif"');
     }
 
     let paidDues = [];
@@ -1896,6 +1900,7 @@ app.get('/api/dues/unpaid', authenticateToken, async (req, res) => {
         member_id: member.id,
         member_name: member.name,
         member_number: member.member_number,
+        dojang: member.dojang,
         unpaid_months: unpaid,
         total_unpaid: unpaid.length,
         total_bill: unpaid.length * defaultAmount
