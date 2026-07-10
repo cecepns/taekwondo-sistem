@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import Modal from '../components/Modal';
-import { 
+import {
   Plus, Check, Clock, Calendar, BadgeCent, FileText, Printer, User, Phone, MapPin,
   Edit, Trash2, FileSpreadsheet
 } from 'lucide-react';
@@ -11,13 +11,13 @@ import {
 export default function Coaches() {
   const [coaches, setCoaches] = useState([]);
   const [honorReports, setHonorReports] = useState([]);
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
-  
+
   const [editingCoach, setEditingCoach] = useState(null);
   const [editingAttendance, setEditingAttendance] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     whatsapp: '',
@@ -62,7 +62,7 @@ export default function Coaches() {
       r.status.toUpperCase(),
       `Rp ${parseFloat(r.honor_calculated).toLocaleString()}`
     ]);
-    
+
     const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -350,7 +350,7 @@ export default function Coaches() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={() => {
               initBulkAttendance();
               setIsAttendanceOpen(true);
@@ -359,7 +359,7 @@ export default function Coaches() {
           >
             <Clock size={14} /> Absen Latihan
           </button>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-blue-600/20"
           >
@@ -375,31 +375,30 @@ export default function Coaches() {
             <div className="w-12 h-12 rounded-xl bg-slate-850 border border-slate-800 flex-shrink-0 flex items-center justify-center text-blue-400">
               <User size={24} />
             </div>
-            
+
             <div className="flex-1 space-y-2 text-xs">
               <div>
                 <h3 className="font-bold text-slate-100 text-sm leading-snug">{c.name}</h3>
                 <span className="text-[10px] text-slate-400">WhatsApp: {c.whatsapp || '-'}</span>
               </div>
-              
+
               <div className="flex items-center gap-1 text-[11px] text-slate-350">
                 <BadgeCent size={13} className="text-slate-500" />
                 <span>Honor dasar: <strong>Rp {parseFloat(c.base_honor).toLocaleString()}</strong> / sesi</span>
               </div>
 
               <div className="pt-1.5 flex items-center justify-between">
-                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                  c.status === 'aktif' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-slate-700/30 text-slate-400'
-                }`}>{c.status}</span>
+                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${c.status === 'aktif' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-slate-700/30 text-slate-400'
+                  }`}>{c.status}</span>
                 <div className="flex gap-2">
-                  <button 
+                  <button
                     onClick={() => startEditCoach(c)}
                     className="p-1 text-slate-400 hover:text-blue-500 transition-colors"
                     title="Edit"
                   >
                     <Edit size={14} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => handleCoachDelete(c.id)}
                     className="p-1 text-slate-400 hover:text-red-500 transition-colors"
                     title="Hapus"
@@ -420,7 +419,7 @@ export default function Coaches() {
             <h3 className="font-semibold text-sm text-slate-200">Riwayat Presensi & Honorarium</h3>
             <p className="text-[11px] text-slate-450">Laporan akumulasi kehadiran pelatih</p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Month Filter */}
             <select
@@ -510,7 +509,7 @@ export default function Coaches() {
                     <td className="py-2.5 px-3 text-center text-slate-200 font-black">
                       {coaches.reduce((sum, c) => sum + filteredHonorReports.filter(r => r.coach_id === c.id && r.status === 'hadir').length, 0)} Sesi
                     </td>
-                    <td className="py-2.5 px-3 text-right text-emerald-300 font-black font-mono">
+                    <td className="py-2.5 px-3 text-right text-black font-black font-mono">
                       Rp {coaches.reduce((sum, c) => {
                         const coachReports = filteredHonorReports.filter(r => r.coach_id === c.id);
                         return sum + coachReports.reduce((s, r) => s + parseFloat(r.honor_calculated || 0), 0);
@@ -548,14 +547,14 @@ export default function Coaches() {
                     <td className="py-3 px-2 font-bold text-slate-100">Rp {parseFloat(r.honor_calculated).toLocaleString()}</td>
                     <td className="py-3 px-2 text-right">
                       <div className="flex justify-end gap-1.5">
-                        <button 
+                        <button
                           onClick={() => startEditAttendance(r)}
                           className="p-1 text-slate-400 hover:text-blue-500 transition-colors"
                           title="Edit"
                         >
                           <Edit size={14} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleAttendanceDelete(r.id)}
                           className="p-1 text-slate-400 hover:text-red-500 transition-colors"
                           title="Hapus"
@@ -573,13 +572,13 @@ export default function Coaches() {
       </div>
 
       {/* Add Coach Modal */}
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => { 
-          setIsModalOpen(false); 
-          setEditingCoach(null); 
-          setFormData({ name: '', whatsapp: '', address: '', base_honor: '', status: 'aktif' }); 
-        }} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingCoach(null);
+          setFormData({ name: '', whatsapp: '', address: '', base_honor: '', status: 'aktif' });
+        }}
         title={editingCoach ? "Edit Pelatih" : "Tambah Pelatih Baru"}
       >
         <form onSubmit={handleCoachSubmit} className="space-y-5 text-xs text-slate-350">
@@ -647,13 +646,13 @@ export default function Coaches() {
       </Modal>
 
       {/* Attendance Modal */}
-      <Modal 
-        isOpen={isAttendanceOpen} 
-        onClose={() => { 
-          setIsAttendanceOpen(false); 
-          setEditingAttendance(null); 
-          setAttData({ coach_id: '', date: new Date().toISOString().split('T')[0], status: 'hadir', time_in: '16:00', time_out: '18:00' }); 
-        }} 
+      <Modal
+        isOpen={isAttendanceOpen}
+        onClose={() => {
+          setIsAttendanceOpen(false);
+          setEditingAttendance(null);
+          setAttData({ coach_id: '', date: new Date().toISOString().split('T')[0], status: 'hadir', time_in: '16:00', time_out: '18:00' });
+        }}
         title={editingAttendance ? "Edit Presensi Pelatih" : "Catat Absensi Pelatih"}
       >
         <form onSubmit={handleAttSubmit} className="space-y-5 text-xs text-slate-300">
@@ -760,13 +759,12 @@ export default function Coaches() {
                                     [c.id]: { ...prev[c.id], status }
                                   }));
                                 }}
-                                className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${
-                                  mapEntry.status === status
+                                className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase transition-all ${mapEntry.status === status
                                     ? status === 'hadir' ? 'bg-green-600 text-white shadow-sm' :
                                       status === 'izin' ? 'bg-blue-600 text-white shadow-sm' :
-                                      status === 'sakit' ? 'bg-yellow-500 text-slate-950 shadow-sm' : 'bg-red-600 text-white shadow-sm'
+                                        status === 'sakit' ? 'bg-yellow-500 text-slate-950 shadow-sm' : 'bg-red-600 text-white shadow-sm'
                                     : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50'
-                                }`}
+                                  }`}
                               >
                                 {status}
                               </button>
@@ -813,10 +811,10 @@ export default function Coaches() {
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <button
               type="button"
-              onClick={() => { 
-                setIsAttendanceOpen(false); 
-                setEditingAttendance(null); 
-                setAttData({ coach_id: '', date: new Date().toISOString().split('T')[0], status: 'hadir', time_in: '16:00', time_out: '18:00' }); 
+              onClick={() => {
+                setIsAttendanceOpen(false);
+                setEditingAttendance(null);
+                setAttData({ coach_id: '', date: new Date().toISOString().split('T')[0], status: 'hadir', time_in: '16:00', time_out: '18:00' });
               }}
               className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
             >

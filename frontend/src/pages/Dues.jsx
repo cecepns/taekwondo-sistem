@@ -768,6 +768,67 @@ export default function Dues({ user, settings }) {
     return matchesSearch && matchesDojang && matchesUnpaidPeriod;
   });
 
+  const handlePrintReceipt = (receipt) => {
+    if (!receipt) return;
+    const printWindow = window.open('', '_blank');
+    const systemName = settings?.app_name || 'Taekwondo Club Management';
+    const dojangName = settings?.dojang_name || 'Dojang Taekwondo';
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Kuitansi Iuran - TX-${receipt.id}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #1e293b; background-color: #ffffff; }
+            .receipt-box { max-width: 450px; margin: 0 auto; border: 1px dashed #cbd5e1; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+            .header { text-align: center; border-bottom: 2px dashed #e2e8f0; padding-bottom: 16px; margin-bottom: 20px; }
+            .header h2 { margin: 0; color: #0f172a; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+            .header p { margin: 4px 0 0 0; font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+            .header .dojang { font-size: 11px; color: #2563eb; font-weight: 700; margin-top: 2px; }
+            .flex-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #f1f5f9; padding: 10px 0; font-size: 13px; }
+            .flex-row span { color: #64748b; }
+            .flex-row strong { color: #0f172a; }
+            .total-row { display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-top: 16px; font-weight: 700; font-size: 15px; }
+            .total-row span { color: #2563eb; }
+            .total-row strong { color: #1d4ed8; font-size: 16px; }
+            .footer { text-align: center; margin-top: 24px; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px; }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-box">
+            <div class="header">
+              <h2>KUITANSI RESMI</h2>
+              <p>${systemName}</p>
+              <div class="dojang">${dojangName}</div>
+            </div>
+            <div class="flex-row"><span>No. Transaksi:</span><strong>#TX-${receipt.id}</strong></div>
+            <div class="flex-row"><span>Nama Anggota:</span><strong>${receipt.member_name}</strong></div>
+            <div class="flex-row"><span>No. Anggota:</span><strong>${receipt.member_number || '-'}</strong></div>
+            <div class="flex-row"><span>Periode Iuran:</span><strong>${getMonthName(receipt.month)} ${receipt.year}</strong></div>
+            <div class="flex-row"><span>Metode Bayar:</span><strong style="text-transform: uppercase;">${receipt.method}</strong></div>
+            <div class="flex-row"><span>Tanggal Bayar:</span><strong>${new Date(receipt.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></div>
+            
+            <div class="total-row">
+              <span>TOTAL BAYAR</span>
+              <strong>Rp ${parseFloat(receipt.amount).toLocaleString()}</strong>
+            </div>
+            
+            <div class="footer">
+              <p>${systemName} - Bukti Pembayaran Sah</p>
+              <p style="font-size: 9px; margin-top: 4px;">Dicetak otomatis oleh sistem manajemen dojang</p>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div className="space-y-6">
       {/* Banner */}
@@ -1416,18 +1477,21 @@ export default function Dues({ user, settings }) {
           <div className="space-y-6 text-xs text-slate-700 p-4 border border-slate-200 rounded-xl bg-slate-50">
             <div className="text-center space-y-1">
               <h3 className="text-sm font-bold text-slate-800">KUITANSI RESMI</h3>
-              <p className="text-slate-500 uppercase tracking-widest text-[10px]">Taekwondo Club Management</p>
+              <p className="text-slate-500 uppercase tracking-widest text-[10px]">{settings?.app_name || 'Taekwondo Club Management'}</p>
+              {settings?.dojang_name && (
+                <p className="text-blue-600 font-bold text-[9px] uppercase tracking-wider">{settings.dojang_name}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-y-2 border-t border-b border-slate-200 py-4">
-              <span className="text-slate-500">No. Transaksi</span>
+              <span className="text-slate-550">No. Transaksi</span>
               <span className="text-slate-800 font-semibold text-right">#TX-{selectedReceipt.id}</span>
 
               <span className="text-slate-550">Nama Anggota</span>
               <span className="text-slate-800 font-semibold text-right">{selectedReceipt.member_name}</span>
 
               <span className="text-slate-550">No. Anggota</span>
-              <span className="text-slate-800 text-right">{selectedReceipt.member_number}</span>
+              <span className="text-slate-800 text-right">{selectedReceipt.member_number || '-'}</span>
 
               <span className="text-slate-550">Pembayaran Iuran</span>
               <span className="text-slate-800 font-medium text-right">{getMonthName(selectedReceipt.month)} {selectedReceipt.year}</span>
@@ -1446,44 +1510,18 @@ export default function Dues({ user, settings }) {
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
               <button
-                onClick={() => {
-                  const receiptWindow = window.open('', '_blank');
-                  receiptWindow.document.write(`
-                    <html>
-                      <head>
-                        <title>Kuitansi Iuran - TX-${selectedReceipt.id}</title>
-                        <style>
-                          body { font-family: 'Segoe UI', sans-serif; padding: 40px; color: #1e293b; }
-                          .receipt-box { max-width: 500px; margin: 0 auto; border: 2px dashed #cbd5e1; padding: 30px; border-radius: 8px; }
-                          h2 { text-align: center; margin-top: 0; color: #0f172a; text-transform: uppercase; }
-                          p { margin: 8px 0; font-size: 14px; }
-                          .flex-row { display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 8px 0; }
-                          .total { font-weight: bold; font-size: 18px; border-top: 2px solid #0f172a; padding-top: 12px; margin-top: 12px; }
-                        </style>
-                      </head>
-                      <body>
-                        <div class="receipt-box">
-                          <h2>Kuitansi Iuran</h2>
-                          <div class="flex-row"><span>No. Transaksi:</span><strong>#TX-${selectedReceipt.id}</strong></div>
-                          <div class="flex-row"><span>Nama Anggota:</span><strong>${selectedReceipt.member_name}</strong></div>
-                          <div class="flex-row"><span>No. Anggota:</span><strong>${selectedReceipt.member_number}</strong></div>
-                          <div class="flex-row"><span>Periode Iuran:</span><strong>${getMonthName(selectedReceipt.month)} ${selectedReceipt.year}</strong></div>
-                          <div class="flex-row"><span>Metode Bayar:</span><strong style="text-transform: uppercase;">${selectedReceipt.method}</strong></div>
-                          <div class="flex-row"><span>Tanggal Bayar:</span><strong>${new Date(selectedReceipt.payment_date).toLocaleDateString('id-ID')}</strong></div>
-                          <div class="flex-row total"><span>TOTAL BAYAR:</span><span>Rp ${parseFloat(selectedReceipt.amount).toLocaleString()}</span></div>
-                          <p style="text-align: center; margin-top: 30px; font-size: 12px; color: #64748b;">Taekwondo Club Management - Kuitansi Bukti Pembayaran Sah</p>
-                        </div>
-                        <script>
-                          window.onload = function() { window.print(); }
-                        </script>
-                      </body>
-                    </html>
-                  `);
-                  receiptWindow.document.close();
-                }}
-                className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 flex items-center gap-1.5 font-semibold"
+                type="button"
+                onClick={() => handlePrintReceipt(selectedReceipt)}
+                className="px-3.5 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 flex items-center gap-1.5 font-semibold text-xs transition-colors"
               >
                 <Printer size={14} /> Cetak Kuitansi
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePrintReceipt(selectedReceipt)}
+                className="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 flex items-center gap-1.5 font-semibold text-xs shadow-md transition-colors"
+              >
+                <FileText size={14} /> Download PDF
               </button>
             </div>
           </div>
