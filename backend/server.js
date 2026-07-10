@@ -763,11 +763,12 @@ app.post('/api/members', authenticateToken, checkRole(['super_admin', 'admin']),
   let memberNumber = prefix + '0001';
   
   if (useMemoryDb) {
-    const count = memoryDb.members.length + 1;
-    memberNumber = prefix + String(count).padStart(4, '0');
+    const maxId = memoryDb.members.length > 0 ? Math.max(...memoryDb.members.map(m => m.id)) : 0;
+    memberNumber = prefix + String(maxId + 1).padStart(4, '0');
   } else {
-    const [rows] = await pool.query('SELECT COUNT(*) as count FROM members');
-    memberNumber = prefix + String(rows[0].count + 1).padStart(4, '0');
+    const [rows] = await pool.query('SELECT MAX(id) as maxId FROM members');
+    const maxId = rows[0].maxId || 0;
+    memberNumber = prefix + String(maxId + 1).padStart(4, '0');
   }
 
   const memberData = {
@@ -775,9 +776,9 @@ app.post('/api/members', authenticateToken, checkRole(['super_admin', 'admin']),
     name,
     gender,
     birth_place,
-    birth_date: birth_date ? birth_date : null,
+    birth_date: (birth_date !== undefined && birth_date !== null && birth_date.trim() !== '') ? birth_date : null,
     parent_name,
-    whatsapp: whatsapp ? whatsapp : null,
+    whatsapp: (whatsapp !== undefined && whatsapp !== null && whatsapp.trim() !== '') ? whatsapp : null,
     school,
     dojang: dojang || '',
     belt_id: belt_id ? parseInt(belt_id) : null,
@@ -852,9 +853,9 @@ app.put('/api/members/:id', authenticateToken, checkRole(['super_admin', 'admin'
     name: name || existing.name,
     gender: gender || existing.gender,
     birth_place: birth_place || existing.birth_place,
-    birth_date: birth_date ? birth_date : null,
+    birth_date: (birth_date !== undefined) ? (birth_date.trim() !== '' ? birth_date : null) : existing.birth_date,
     parent_name: parent_name || existing.parent_name,
-    whatsapp: whatsapp ? whatsapp : null,
+    whatsapp: (whatsapp !== undefined) ? (whatsapp.trim() !== '' ? whatsapp : null) : existing.whatsapp,
     school: school || existing.school,
     dojang: dojang !== undefined ? dojang : existing.dojang,
     belt_id: belt_id ? parseInt(belt_id) : existing.belt_id,

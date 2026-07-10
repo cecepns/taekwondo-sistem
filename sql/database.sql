@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS `members` (
   `photo` VARCHAR(255) DEFAULT '',
   `gender` ENUM('L', 'P') NOT NULL,
   `birth_place` VARCHAR(100) NOT NULL,
-  `birth_date` DATE NOT NULL,
+  `birth_date` DATE NULL,
   `parent_name` VARCHAR(100) DEFAULT '',
   `whatsapp` VARCHAR(20) DEFAULT '',
   `school` VARCHAR(100) DEFAULT '',
