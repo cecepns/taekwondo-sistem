@@ -16,6 +16,15 @@ export default function Championships() {
   const [members, setMembers] = useState([]);
   const [belts, setBelts] = useState([]);
   const [classes, setClasses] = useState([]); // Master weight classes
+  
+  // NEW: Dynamic Master Data States
+  const [masterCategories, setMasterCategories] = useState([]);
+  const [masterAgeGroups, setMasterAgeGroups] = useState([]);
+  
+  // Master Management Modal States
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isAgeGroupModalOpen, setIsAgeGroupModalOpen] = useState(false);
+  const [newMasterName, setNewMasterName] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRegOpen, setIsRegOpen] = useState(false);
@@ -28,8 +37,8 @@ export default function Championships() {
   const [isClassModalOpen, setIsClassModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
   const [classForm, setClassForm] = useState({
-    category: 'Kyorugi',
-    age_group: 'Pracadet A',
+    category: '',
+    age_group: '',
     gender: 'Semua',
     class_name: '',
     min_weight: '',
@@ -40,6 +49,7 @@ export default function Championships() {
   const [isWeighInOpen, setIsWeighInOpen] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [weighInWeight, setWeighInWeight] = useState('');
+  const [weighInHistory, setWeighInHistory] = useState([]);
 
   // Participant Form state
   const [partForm, setPartForm] = useState({
@@ -73,12 +83,18 @@ export default function Championships() {
       const membersRes = await request.get(API_ENDPOINTS.MEMBERS.LIST);
       const beltsRes = await request.get(API_ENDPOINTS.BELTS.LIST);
       const classesRes = await request.get(API_ENDPOINTS.CHAMPIONSHIPS.CLASSES_LIST);
+      
+      const catRes = await request.get(API_ENDPOINTS.CHAMPIONSHIPS.CATEGORIES);
+      const ageRes = await request.get(API_ENDPOINTS.CHAMPIONSHIPS.AGE_GROUPS);
 
       if (chRes.success) setChampionships(chRes.data);
       if (partRes.success) setParticipants(partRes.data);
       if (membersRes.success) setMembers(membersRes.data);
       if (beltsRes.success) setBelts(beltsRes.data);
       if (classesRes.success) setClasses(classesRes.data);
+      
+      if (catRes.success) setMasterCategories(catRes.data);
+      if (ageRes.success) setMasterAgeGroups(ageRes.data);
     } catch (e) {
       console.error(e);
     }
@@ -265,6 +281,39 @@ export default function Championships() {
     }
   };
 
+  const handleAddMaster = async (type) => {
+    if (!newMasterName) return toast.error('Nama tidak boleh kosong');
+    try {
+      const endpoint = type === 'category' ? API_ENDPOINTS.CHAMPIONSHIPS.CATEGORIES : API_ENDPOINTS.CHAMPIONSHIPS.AGE_GROUPS;
+      const res = await request.post(endpoint, { name: newMasterName });
+      if (res.success) {
+        toast.success('Berhasil ditambahkan');
+        setNewMasterName('');
+        fetchData();
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Gagal menambahkan data');
+    }
+  };
+
+  const handleDeleteMaster = async (type, id) => {
+    if (!window.confirm('Hapus master data ini?')) return;
+    try {
+      const endpoint = type === 'category' 
+        ? API_ENDPOINTS.CHAMPIONSHIPS.CATEGORY_DETAIL(id) 
+        : API_ENDPOINTS.CHAMPIONSHIPS.AGE_GROUP_DETAIL(id);
+      const res = await request.delete(endpoint);
+      if (res.success) {
+        toast.success('Berhasil dihapus');
+        fetchData();
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('Gagal menghapus data');
+    }
+  };
+
   const handleClassSubmit = async (e) => {
     e.preventDefault();
     if (!classForm.class_name) return toast.error('Harap lengkapi nama kelas (contoh: Under 22kg)!');
@@ -302,9 +351,11 @@ export default function Championships() {
         weigh_in_weight: weighInWeight
       });
       if (res.success) {
-        toast.success('Data timbang berat badan berhasil disimpan!');
-        setIsWeighInOpen(false);
-        setSelectedParticipant(null);
+        toast.success(res.message);
+        try {
+          const histRes = await request.get(API_ENDPOINTS.CHAMPIONSHIPS.WEIGH_IN_HISTORY(selectedParticipant.id));
+          if (histRes.success) setWeighInHistory(histRes.data);
+        } catch(e) {}
         setWeighInWeight('');
         fetchData();
       }
@@ -632,10 +683,17 @@ export default function Championships() {
                         <td className="py-3 px-2 text-right">
                           <div className="flex justify-end gap-1.5">
                             <button 
-                              onClick={() => {
+                              onClick={async () => {
                                 setSelectedParticipant(p);
                                 setWeighInWeight(p.weigh_in_weight || '');
                                 setIsWeighInOpen(true);
+                                setWeighInHistory([]);
+                                try {
+                                  const res = await request.get(API_ENDPOINTS.CHAMPIONSHIPS.WEIGH_IN_HISTORY(p.id));
+                                  if (res.success) setWeighInHistory(res.data);
+                                } catch (e) {
+                                  console.error(e);
+                                }
                               }}
                               className="p-1 text-slate-400 hover:text-emerald-600 transition-colors"
                               title="Timbang / Kontrol Berat"
@@ -665,12 +723,105 @@ export default function Championships() {
               </div>
             )}
           </div>
+
+          {/* Kontrol Berat Badan Dashboard */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            <h3 className="font-semibold text-sm text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
+              <Scale size={16} className="text-blue-600"/> Kontrol Berat Badan (Tidak Aman)
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Overweight List */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-amber-500 font-bold uppercase text-[11px] px-1 w-fit rounded">
+                  <ShieldAlert size={14} /> OVERWEIGHT
+                </div>
+                <div className="border border-slate-800 rounded-lg overflow-hidden bg-[#1a1a1a]">
+                  <table className="w-full text-left text-[11px] text-slate-300">
+                    <thead>
+                      <tr className="border-b border-slate-700 text-slate-300/80">
+                        <th className="py-2.5 px-3 font-medium">Nama</th>
+                        <th className="py-2.5 px-3 text-center font-medium">Selisih</th>
+                        <th className="py-2.5 px-3 text-right font-medium">jenis kelamin</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {participants.filter(p => p.weigh_in_status === 'overweight').map(p => {
+                        const selisih = (parseFloat(p.weigh_in_weight) - parseFloat(p.class_max_weight)).toFixed(2);
+                        return (
+                          <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                            <td className="py-2.5 px-3 flex items-center gap-1.5 text-red-500 font-semibold uppercase">
+                              <span className="text-red-500 font-black text-sm leading-none">↑</span> {p.member_name}
+                            </td>
+                            <td className="py-2.5 px-3 text-center">{selisih}</td>
+                            <td className="py-2.5 px-3 text-right uppercase">{p.class_gender === 'L' ? 'PUTRA' : p.class_gender === 'P' ? 'PUTRI' : p.member_gender === 'L' ? 'PUTRA' : 'PUTRI'}</td>
+                          </tr>
+                        );
+                      })}
+                      {participants.filter(p => p.weigh_in_status === 'overweight').length === 0 && (
+                         <tr><td colSpan="3" className="py-6 text-center text-slate-500">Tidak ada atlet overweight</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Underweight List */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-yellow-500 font-bold uppercase text-[11px] px-1 w-fit rounded">
+                  <ShieldAlert size={14} /> UNDERWEIGHT
+                </div>
+                <div className="border border-slate-800 rounded-lg overflow-hidden bg-[#1a1a1a]">
+                  <table className="w-full text-left text-[11px] text-slate-300">
+                    <thead>
+                      <tr className="border-b border-slate-700 text-slate-300/80">
+                        <th className="py-2.5 px-3 font-medium">Nama</th>
+                        <th className="py-2.5 px-3 text-center font-medium">Selisih</th>
+                        <th className="py-2.5 px-3 text-right font-medium">jenis kelamin</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800">
+                      {participants.filter(p => p.weigh_in_status === 'underweight').map(p => {
+                        const selisih = (parseFloat(p.class_min_weight) - parseFloat(p.weigh_in_weight)).toFixed(2);
+                        return (
+                          <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                            <td className="py-2.5 px-3 flex items-center gap-1.5 text-yellow-500 font-semibold uppercase">
+                              <span className="text-yellow-500 font-black text-sm leading-none">↓</span> {p.member_name}
+                            </td>
+                            <td className="py-2.5 px-3 text-center">{selisih}</td>
+                            <td className="py-2.5 px-3 text-right uppercase">{p.class_gender === 'L' ? 'PUTRA' : p.class_gender === 'P' ? 'PUTRI' : p.member_gender === 'L' ? 'PUTRA' : 'PUTRI'}</td>
+                          </tr>
+                        );
+                      })}
+                      {participants.filter(p => p.weigh_in_status === 'underweight').length === 0 && (
+                         <tr><td colSpan="3" className="py-6 text-center text-slate-500">Tidak ada atlet underweight</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
         </>
       ) : (
         /* Database Kelas Tanding Panel */
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-2 border-b border-slate-200 gap-4">
             <h3 className="font-semibold text-sm text-slate-800">Konfigurasi Kategori & Kelas Tanding</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 transition-colors border border-slate-200"
+              >
+                <Edit size={13} /> Atur Kategori
+              </button>
+              <button
+                onClick={() => setIsAgeGroupModalOpen(true)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg flex items-center gap-1.5 transition-colors border border-slate-200"
+              >
+                <Edit size={13} /> Atur Golongan Usia
+              </button>
+            </div>
           </div>
 
           {classes.length === 0 ? (
@@ -834,6 +985,76 @@ export default function Championships() {
         </form>
       </Modal>
 
+      {/* Kategori Master Modal */}
+      <Modal
+        isOpen={isCategoryModalOpen}
+        onClose={() => { setIsCategoryModalOpen(false); setNewMasterName(''); }}
+        title="Atur Kategori Tanding"
+      >
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              placeholder="Kategori baru..." 
+              value={newMasterName}
+              onChange={(e) => setNewMasterName(e.target.value)}
+              className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+            />
+            <button 
+              onClick={() => handleAddMaster('category')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700"
+            >
+              Tambah
+            </button>
+          </div>
+          <ul className="divide-y divide-slate-100 max-h-60 overflow-y-auto">
+            {masterCategories.map(cat => (
+              <li key={cat.id} className="flex justify-between items-center py-2 px-1">
+                <span className="text-sm font-medium text-slate-800">{cat.name}</span>
+                <button onClick={() => handleDeleteMaster('category', cat.id)} className="text-red-500 hover:bg-red-50 p-1 rounded">
+                  <Trash2 size={14} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Modal>
+
+      {/* Golongan Usia Master Modal */}
+      <Modal
+        isOpen={isAgeGroupModalOpen}
+        onClose={() => { setIsAgeGroupModalOpen(false); setNewMasterName(''); }}
+        title="Atur Golongan Usia"
+      >
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              placeholder="Golongan Usia baru..." 
+              value={newMasterName}
+              onChange={(e) => setNewMasterName(e.target.value)}
+              className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+            />
+            <button 
+              onClick={() => handleAddMaster('ageGroup')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700"
+            >
+              Tambah
+            </button>
+          </div>
+          <ul className="divide-y divide-slate-100 max-h-60 overflow-y-auto">
+            {masterAgeGroups.map(age => (
+              <li key={age.id} className="flex justify-between items-center py-2 px-1">
+                <span className="text-sm font-medium text-slate-800">{age.name}</span>
+                <button onClick={() => handleDeleteMaster('ageGroup', age.id)} className="text-red-500 hover:bg-red-50 p-1 rounded">
+                  <Trash2 size={14} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Modal>
+
       {/* Database Master Class Modal */}
       <Modal
         isOpen={isClassModalOpen}
@@ -853,9 +1074,10 @@ export default function Championships() {
                 onChange={(e) => setClassForm(prev => ({ ...prev, category: e.target.value }))}
                 className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
-                <option value="Kyorugi">Kyorugi (Tanding)</option>
-                <option value="Poomsae">Poomsae (Jurus)</option>
-                <option value="Festival">Festival</option>
+                <option value="">Pilih Kategori...</option>
+                {masterCategories.map(cat => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                ))}
               </select>
             </div>
             <div className="space-y-1">
@@ -865,11 +1087,10 @@ export default function Championships() {
                 onChange={(e) => setClassForm(prev => ({ ...prev, age_group: e.target.value }))}
                 className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
-                <option value="Pracadet A">Pracadet A (Usia &lt; 9)</option>
-                <option value="Pracadet B">Pracadet B (Usia 9-11)</option>
-                <option value="Cadet">Cadet (Usia 12-14)</option>
-                <option value="Junior">Junior (Usia 15-17)</option>
-                <option value="Senior">Senior (Usia 18+)</option>
+                <option value="">Pilih Golongan...</option>
+                {masterAgeGroups.map(age => (
+                  <option key={age.id} value={age.name}>{age.name}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -1010,7 +1231,7 @@ export default function Championships() {
               }
             })()}
 
-            <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
+            <div className="flex justify-end gap-3 border-t border-slate-100 pt-4 pb-4">
               <button
                 type="button"
                 onClick={() => {
@@ -1020,15 +1241,41 @@ export default function Championships() {
                 }}
                 className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
               >
-                Batal
+                Tutup
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold"
+                disabled={isLoading}
+                className="px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold disabled:opacity-50"
               >
-                Simpan Hasil Timbang
+                {isLoading ? 'Menyimpan...' : 'Simpan Hasil Timbang'}
               </button>
             </div>
+
+            {/* Weigh-in History List */}
+            {weighInHistory.length > 0 && (
+              <div className="space-y-2 border-t border-slate-200 pt-4">
+                <h4 className="font-semibold text-slate-800 text-[13px]">Riwayat Penimbangan</h4>
+                <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
+                  {weighInHistory.map(hist => (
+                    <div key={hist.id} className="p-3 bg-white border border-slate-100 rounded-lg flex justify-between items-center shadow-sm">
+                      <div className="space-y-0.5">
+                        <div className="font-bold text-slate-800">{parseFloat(hist.weight)} kg</div>
+                        <div className="text-[10px] text-slate-400">{new Date(hist.created_at).toLocaleString('id-ID')}</div>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        hist.status === 'passed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
+                        hist.status === 'overweight' ? 'bg-red-50 text-red-600 border border-red-200' :
+                        hist.status === 'underweight' ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' :
+                        'bg-slate-50 text-slate-500 border border-slate-200'
+                      }`}>
+                        {hist.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </form>
         )}
       </Modal>

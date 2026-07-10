@@ -1981,14 +1981,30 @@ app.post('/api/championships/participants/:id/weigh-in', authenticateToken, chec
 
   if (useMemoryDb) {
     const idx = memoryDb.championship_participants.findIndex(p => p.id === id);
-    memoryDb.championship_participants[idx].weigh_in_weight = actWeight;
-    memoryDb.championship_participants[idx].weigh_in_status = status;
+    if (idx !== -1) {
+      memoryDb.championship_participants[idx].weigh_in_weight = actWeight;
+      memoryDb.championship_participants[idx].weigh_in_status = status;
+    }
+    if (!memoryDb.weigh_in_history) memoryDb.weigh_in_history = [];
+    const newId = memoryDb.weigh_in_history.length > 0 ? Math.max(...memoryDb.weigh_in_history.map(h => h.id)) + 1 : 1;
+    memoryDb.weigh_in_history.push({
+      id: newId,
+      participant_id: id,
+      weight: actWeight,
+      status: status,
+      created_at: new Date().toISOString()
+    });
   } else {
     await pool.query(`
       UPDATE championship_participants 
       SET weigh_in_weight = ?, weigh_in_status = ? 
       WHERE id = ?
     `, [actWeight, status, id]);
+    
+    await pool.query(`
+      INSERT INTO weigh_in_history (participant_id, weight, status)
+      VALUES (?, ?, ?)
+    `, [id, actWeight, status]);
   }
 
   res.json({ 
@@ -1999,6 +2015,86 @@ app.post('/api/championships/participants/:id/weigh-in', authenticateToken, chec
       weigh_in_status: status 
     } 
   });
+});
+
+// --- WEIGH-IN HISTORY ---
+app.get('/api/championships/participants/:id/weigh-in-history', authenticateToken, async (req, res) => {
+  const participantId = parseInt(req.params.id);
+  if (useMemoryDb) {
+    if (!memoryDb.weigh_in_history) memoryDb.weigh_in_history = [];
+    const history = memoryDb.weigh_in_history.filter(h => h.participant_id === participantId).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    return res.json({ success: true, data: history });
+  }
+  const [rows] = await pool.query('SELECT * FROM weigh_in_history WHERE participant_id = ? ORDER BY created_at DESC', [participantId]);
+  res.json({ success: true, data: rows });
+});
+
+// --- CHAMPIONSHIP CATEGORIES ---
+app.get('/api/championship-categories', authenticateToken, async (req, res) => {
+  if (useMemoryDb) {
+    if (!memoryDb.championship_categories) memoryDb.championship_categories = [{id:1, name:'Kyorugi'}, {id:2, name:'Poomsae'}, {id:3, name:'Freestyle Poomsae'}];
+    return res.json({ success: true, data: memoryDb.championship_categories });
+  }
+  const [rows] = await pool.query('SELECT * FROM championship_categories ORDER BY id ASC');
+  res.json({ success: true, data: rows });
+});
+
+app.post('/api/championship-categories', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ success: false, message: 'Name is required' });
+  
+  if (useMemoryDb) {
+    if (!memoryDb.championship_categories) memoryDb.championship_categories = [];
+    const newId = memoryDb.championship_categories.length > 0 ? Math.max(...memoryDb.championship_categories.map(c => c.id)) + 1 : 1;
+    memoryDb.championship_categories.push({ id: newId, name });
+    return res.json({ success: true, message: 'Added', id: newId });
+  }
+  const [result] = await pool.query('INSERT INTO championship_categories (name) VALUES (?)', [name]);
+  res.json({ success: true, message: 'Added', id: result.insertId });
+});
+
+app.delete('/api/championship-categories/:id', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (useMemoryDb) {
+    memoryDb.championship_categories = memoryDb.championship_categories.filter(c => c.id !== id);
+    return res.json({ success: true, message: 'Deleted' });
+  }
+  await pool.query('DELETE FROM championship_categories WHERE id = ?', [id]);
+  res.json({ success: true, message: 'Deleted' });
+});
+
+// --- CHAMPIONSHIP AGE GROUPS ---
+app.get('/api/championship-age-groups', authenticateToken, async (req, res) => {
+  if (useMemoryDb) {
+    if (!memoryDb.championship_age_groups) memoryDb.championship_age_groups = [{id:1, name:'Pracadet A'}, {id:2, name:'Cadet'}, {id:3, name:'Junior'}, {id:4, name:'Senior'}];
+    return res.json({ success: true, data: memoryDb.championship_age_groups });
+  }
+  const [rows] = await pool.query('SELECT * FROM championship_age_groups ORDER BY id ASC');
+  res.json({ success: true, data: rows });
+});
+
+app.post('/api/championship-age-groups', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ success: false, message: 'Name is required' });
+  
+  if (useMemoryDb) {
+    if (!memoryDb.championship_age_groups) memoryDb.championship_age_groups = [];
+    const newId = memoryDb.championship_age_groups.length > 0 ? Math.max(...memoryDb.championship_age_groups.map(c => c.id)) + 1 : 1;
+    memoryDb.championship_age_groups.push({ id: newId, name });
+    return res.json({ success: true, message: 'Added', id: newId });
+  }
+  const [result] = await pool.query('INSERT INTO championship_age_groups (name) VALUES (?)', [name]);
+  res.json({ success: true, message: 'Added', id: result.insertId });
+});
+
+app.delete('/api/championship-age-groups/:id', authenticateToken, checkRole(['super_admin', 'admin']), async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (useMemoryDb) {
+    memoryDb.championship_age_groups = memoryDb.championship_age_groups.filter(c => c.id !== id);
+    return res.json({ success: true, message: 'Deleted' });
+  }
+  await pool.query('DELETE FROM championship_age_groups WHERE id = ?', [id]);
+  res.json({ success: true, message: 'Deleted' });
 });
 
 

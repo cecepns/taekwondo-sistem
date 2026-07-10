@@ -67,8 +67,13 @@ export const API_ENDPOINTS = {
     PARTICIPANTS_CREATE: "/championships/participants",
     PARTICIPANTS_DETAIL: (id) => `/championships/participants/${id}`,
     CLASSES_LIST: "/championships/classes",
-    CLASSES_DETAIL: (id) => `/championships/classes/${id}`,
-    WEIGH_IN: (id) => `/championships/participants/${id}/weigh-in`
+    PARTICIPANTS: (id) => `/championships/${id}/participants`,
+    WEIGH_IN: (id) => `/championships/participants/${id}/weigh-in`,
+    WEIGH_IN_HISTORY: (id) => `/championships/participants/${id}/weigh-in-history`,
+    CATEGORIES: '/championship-categories',
+    CATEGORY_DETAIL: (id) => `/championship-categories/${id}`,
+    AGE_GROUPS: '/championship-age-groups',
+    AGE_GROUP_DETAIL: (id) => `/championship-age-groups/${id}`
   },
   REPORTS: {
     HONOR: "/reports/honor",
