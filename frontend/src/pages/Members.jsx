@@ -5,8 +5,8 @@ import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
-import { 
-  Search, Plus, Eye, Edit, Trash2, ShieldAlert, 
+import {
+  Search, Plus, Eye, Edit, Trash2, ShieldAlert,
   FileText, Download, Printer, User, Phone, MapPin, Calendar, HelpCircle
 } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function Members() {
   const [members, setMembers] = useState([]);
   const [belts, setBelts] = useState([]);
   const [classes, setClasses] = useState([]);
-  
+
   // Filtering & Pagination State
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -29,7 +29,7 @@ export default function Members() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('Tambah Anggota');
   const [editId, setEditId] = useState(null);
-  
+
   // Form Fields State
   const [formData, setFormData] = useState({
     name: '',
@@ -160,7 +160,7 @@ export default function Members() {
   const handleEdit = async (member) => {
     setModalTitle('Edit Data Anggota');
     setEditId(member.id);
-    
+
     // Fetch details to get classes
     try {
       const detailRes = await request.get(API_ENDPOINTS.MEMBERS.DETAIL(member.id));
@@ -199,13 +199,13 @@ export default function Members() {
           Apakah Anda yakin ingin menghapus data <strong>{name}</strong>?
         </span>
         <div className="flex justify-end gap-2 text-xs">
-          <button 
+          <button
             className="px-3 py-1 bg-slate-200 hover:bg-slate-300 rounded font-medium text-slate-800"
             onClick={() => toast.dismiss(t.id)}
           >
             Batal
           </button>
-          <button 
+          <button
             className="px-3 py-1 bg-red-600 text-white rounded font-medium hover:bg-red-500"
             onClick={async () => {
               toast.dismiss(t.id);
@@ -274,15 +274,15 @@ export default function Members() {
           <h2 className="text-xl font-bold text-slate-100">Master Data Anggota</h2>
           <p className="text-xs text-slate-400">Total {total} anggota terdaftar</p>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={printReport}
             className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
           >
             <Printer size={15} /> Cetak
           </button>
-          <button 
+          <button
             onClick={() => {
               setModalTitle('Tambah Anggota Baru');
               resetForm();
@@ -379,7 +379,7 @@ export default function Members() {
                           <Link to={`/members/${member.id}`} className="font-semibold text-slate-200 hover:text-blue-400 text-sm block">
                             {member.name}
                           </Link>
-                          <span className="text-[10px] text-slate-500">{member.member_number}</span>
+                          {/* <span className="text-[10px] text-slate-500">{member.member_number}</span> */}
                         </div>
                       </div>
                     </td>
@@ -387,12 +387,12 @@ export default function Members() {
                     {/* Belt color info */}
                     <td className="p-4">
                       <div className="flex items-center gap-2">
-                        <span className={`w-3.5 h-3.5 rounded border border-slate-700 bg-slate-200`} style={{ 
-                          backgroundColor: member.belt_id === 1 ? '#ffffff' : 
-                                          member.belt_id === 2 ? '#fbbf24' : 
-                                          member.belt_id === 4 ? '#22c55e' : 
-                                          member.belt_id === 6 ? '#3b82f6' : 
-                                          member.belt_id === 8 ? '#ef4444' : '#0f172a'
+                        <span className={`w-3.5 h-3.5 rounded border border-slate-700 bg-slate-200`} style={{
+                          backgroundColor: member.belt_id === 1 ? '#ffffff' :
+                            member.belt_id === 2 ? '#fbbf24' :
+                              member.belt_id === 4 ? '#22c55e' :
+                                member.belt_id === 6 ? '#3b82f6' :
+                                  member.belt_id === 8 ? '#ef4444' : '#0f172a'
                         }} />
                         <span className="font-medium text-slate-300">{member.belt_name}</span>
                       </div>
@@ -414,12 +414,11 @@ export default function Members() {
 
                     {/* Status badges */}
                     <td className="p-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${
-                        member.status === 'aktif' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                        member.status === 'tidak_aktif' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                        member.status === 'lulus' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                        'bg-slate-500/10 text-slate-400 border border-slate-500/20'
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${member.status === 'aktif' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                          member.status === 'tidak_aktif' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                            member.status === 'lulus' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
+                              'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+                        }`}>
                         {member.status}
                       </span>
                     </td>
@@ -427,21 +426,21 @@ export default function Members() {
                     {/* Actions */}
                     <td className="p-4">
                       <div className="flex items-center justify-center gap-2">
-                        <Link 
-                          to={`/members/${member.id}`} 
+                        <Link
+                          to={`/members/${member.id}`}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors"
                           title="Detail Profile"
                         >
                           <Eye size={15} />
                         </Link>
-                        <button 
+                        <button
                           onClick={() => handleEdit(member)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-yellow-400 hover:bg-slate-800 transition-colors"
                           title="Edit"
                         >
                           <Edit size={15} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(member.id, member.name)}
                           className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors"
                           title="Hapus"
@@ -456,9 +455,9 @@ export default function Members() {
             </table>
           </div>
         )}
-        
+
         {/* Pagination controls */}
-        <Pagination 
+        <Pagination
           page={page}
           limit={limit}
           total={total}
@@ -475,7 +474,7 @@ export default function Members() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={modalTitle}>
         <form onSubmit={handleSubmit} className="space-y-6 text-xs text-slate-300">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
+
             {/* Nama Lengkap */}
             <div className="space-y-1">
               <label className="font-semibold text-slate-300">Nama Lengkap *</label>
@@ -604,13 +603,12 @@ export default function Members() {
             <label className="font-semibold text-slate-300 block">Kelas Latihan</label>
             <div className="flex flex-wrap gap-2.5">
               {classes.map(c => (
-                <label 
-                  key={c.id} 
-                  className={`px-3 py-1.5 rounded-lg border font-medium flex items-center gap-1.5 cursor-pointer transition-all ${
-                    formData.class_ids.includes(c.id)
+                <label
+                  key={c.id}
+                  className={`px-3 py-1.5 rounded-lg border font-medium flex items-center gap-1.5 cursor-pointer transition-all ${formData.class_ids.includes(c.id)
                       ? 'bg-blue-600/10 border-blue-500 text-blue-400'
                       : 'bg-slate-950/20 border-slate-800 text-slate-400 hover:border-slate-700'
-                  }`}
+                    }`}
                 >
                   <input
                     type="checkbox"
@@ -639,16 +637,16 @@ export default function Members() {
           <div className="grid grid-cols-2 gap-4 border-t border-slate-800/80 pt-4">
             <div className="space-y-1">
               <label className="font-semibold text-slate-500 block">Pas Foto</label>
-              <input 
-                type="file" 
+              <input
+                type="file"
                 onChange={(e) => setPhoto(e.target.files[0])}
                 className="w-full text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:bg-white file:text-slate-700 file:cursor-pointer hover:file:bg-slate-50"
               />
             </div>
             <div className="space-y-1">
               <label className="font-semibold text-slate-500 block">Scan Akta Kelahiran</label>
-              <input 
-                type="file" 
+              <input
+                type="file"
                 onChange={(e) => setDocAkta(e.target.files[0])}
                 className="w-full text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:bg-white file:text-slate-700 file:cursor-pointer hover:file:bg-slate-50"
               />
