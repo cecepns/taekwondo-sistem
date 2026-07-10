@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from '../utils/endpoints';
 import Modal from '../components/Modal';
 import { 
   Plus, ClipboardCheck, Target, TrendingUp, HelpCircle, ArrowUpRight, ArrowDownRight, Award,
-  FileSpreadsheet, FileText, Edit, Trash2
+  FileSpreadsheet, FileText, Edit, Trash2, ChevronRight, ChevronDown
 } from 'lucide-react';
 import Select from 'react-select';
 
@@ -24,6 +24,10 @@ export default function PhysicalTests() {
   const [isLoading, setIsLoading] = useState(false);
   
   const [editingResult, setEditingResult] = useState(null);
+
+  // Tabs & Grouped Accordion States
+  const [activeTab, setActiveTab] = useState('history'); // 'history' or 'grouped'
+  const [expandedMemberId, setExpandedMemberId] = useState(null);
 
   // Custom react-select styles matching our theme
   const selectStyles = {
@@ -317,10 +321,36 @@ export default function PhysicalTests() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex border-b border-slate-200">
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+            activeTab === 'history'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-400 hover:text-slate-700'
+          }`}
+        >
+          Riwayat Catatan Tes
+        </button>
+        <button
+          onClick={() => setActiveTab('grouped')}
+          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+            activeTab === 'grouped'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-400 hover:text-slate-700'
+          }`}
+        >
+          Data Per Orang
+        </button>
+      </div>
+
       {/* Grid of Results */}
       <div className="glass-panel p-6 rounded-2xl border border-slate-200 shadow-xl space-y-4">
         <div className="flex justify-between items-center pb-2 border-b border-slate-200">
-          <h3 className="font-bold text-sm text-slate-800">Riwayat Catatan Tes</h3>
+          <h3 className="font-bold text-sm text-slate-800">
+            {activeTab === 'history' ? 'Riwayat Catatan Tes' : 'Data Catatan Uji Fisik Per Orang'}
+          </h3>
           <div className="flex gap-2">
             <button
               onClick={downloadExcel}
@@ -339,7 +369,7 @@ export default function PhysicalTests() {
         
         {testResults.length === 0 ? (
           <p className="text-xs text-slate-500 text-center py-6">Belum ada catatan hasil uji fisik.</p>
-        ) : (
+        ) : activeTab === 'history' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
@@ -394,6 +424,128 @@ export default function PhysicalTests() {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          /* Grouped by Athlete Accordion Sub-tables View */
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-500 font-semibold uppercase">
+                  <th style={{ width: '40px' }} className="py-3 px-2">No</th>
+                  <th className="py-3 px-2">Nama Atlet</th>
+                  <th className="py-3 px-2">Jumlah Uji Fisik</th>
+                  <th className="py-3 px-2 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {(() => {
+                  const groupedResults = testResults.reduce((acc, curr) => {
+                    if (!acc[curr.member_id]) {
+                      acc[curr.member_id] = {
+                        member_id: curr.member_id,
+                        member_name: curr.member_name,
+                        results: []
+                      };
+                    }
+                    acc[curr.member_id].results.push(curr);
+                    return acc;
+                  }, {});
+                  const groupedList = Object.values(groupedResults);
+
+                  return groupedList.map((g, idx) => {
+                    const isExpanded = expandedMemberId === g.member_id;
+                    return (
+                      <React.Fragment key={g.member_id}>
+                        <tr 
+                          className="hover:bg-slate-50 transition-colors cursor-pointer"
+                          onClick={() => setExpandedMemberId(isExpanded ? null : g.member_id)}
+                        >
+                          <td className="py-3 px-2 text-slate-500 font-semibold">{idx + 1}</td>
+                          <td className="py-3 px-2 font-semibold text-slate-800 flex items-center gap-1.5">
+                            {isExpanded ? <ChevronDown size={14} className="text-slate-400" /> : <ChevronRight size={14} className="text-slate-400" />}
+                            {g.member_name}
+                          </td>
+                          <td className="py-3 px-2 text-slate-655 font-medium">{g.results.length} Tes</td>
+                          <td className="py-3 px-2 text-right">
+                            <button 
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-500"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedMemberId(isExpanded ? null : g.member_id);
+                              }}
+                            >
+                              {isExpanded ? 'Tutup Riwayat' : 'Lihat Riwayat'}
+                            </button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr>
+                            <td colSpan="4" className="p-0 bg-slate-50/50">
+                              <div className="p-4 border-t border-b border-slate-100 space-y-3">
+                                <h4 className="font-semibold text-slate-700 text-xs uppercase tracking-wider">Catatan Uji Fisik: {g.member_name}</h4>
+                                <table className="w-full text-left text-xs bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                  <thead>
+                                    <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-semibold">
+                                      <th className="p-2.5">Tanggal</th>
+                                      <th className="p-2.5">Jenis Tes</th>
+                                      <th className="p-2.5">Target vs Hasil</th>
+                                      <th className="p-2.5">Analisa / Evaluasi</th>
+                                      <th className="p-2.5 text-center">Status</th>
+                                      <th className="p-2.5 text-right">Aksi</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                    {g.results.map(r => (
+                                      <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="p-2.5 text-slate-500 whitespace-nowrap">{new Date(r.date).toLocaleDateString('id-ID')}</td>
+                                        <td className="p-2.5 text-slate-700 font-medium">{r.test_name}</td>
+                                        <td className="p-2.5 text-slate-600 whitespace-nowrap">
+                                          Target: <span className="font-medium text-slate-500">{r.target_value}</span> • Hasil: <span className="font-bold text-blue-600">{r.result_value}</span>
+                                        </td>
+                                        <td className="p-2.5 text-slate-600 leading-normal">{r.evaluation}</td>
+                                        <td className="p-2.5 text-center">
+                                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase inline-flex items-center gap-0.5 ${
+                                            r.status === 'naik' ? 'bg-green-500/10 text-green-700 border border-green-500/20' :
+                                            r.status === 'turun' ? 'bg-red-500/10 text-red-700 border border-red-500/20' :
+                                            'bg-slate-100 border border-slate-200 text-slate-600'
+                                          }`}>
+                                            {r.status === 'naik' && <ArrowUpRight size={11} />}
+                                            {r.status === 'turun' && <ArrowDownRight size={11} />}
+                                            {r.status}
+                                          </span>
+                                        </td>
+                                        <td className="p-2.5 text-right whitespace-nowrap">
+                                          <div className="flex justify-end gap-1.5">
+                                            <button 
+                                              onClick={() => startEditResult(r)}
+                                              className="p-1 text-slate-400 hover:text-blue-500 transition-colors"
+                                              title="Edit"
+                                            >
+                                              <Edit size={14} />
+                                            </button>
+                                            <button 
+                                              onClick={() => handleResultDelete(r.id)}
+                                              className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                                              title="Hapus"
+                                            >
+                                              <Trash2 size={14} />
+                                            </button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  });
+                })()}
               </tbody>
             </table>
           </div>

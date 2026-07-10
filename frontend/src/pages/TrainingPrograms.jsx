@@ -23,7 +23,7 @@ export default function TrainingPrograms() {
   });
 
   // Tabs
-  const [activeTab, setActiveTab] = useState('database'); // 'database' or 'sessions'
+  const [activeTab, setActiveTab] = useState('sessions'); // 'database' or 'sessions'
 
   // Sessions state
   const [sessions, setSessions] = useState([]);
@@ -350,16 +350,6 @@ export default function TrainingPrograms() {
       {/* Tabs */}
       <div className="flex border-b border-slate-200">
         <button 
-          onClick={() => setActiveTab('database')}
-          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'database' 
-              ? 'border-blue-600 text-blue-600' 
-              : 'border-transparent text-slate-400 hover:text-slate-700'
-          }`}
-        >
-          <Dumbbell size={14} /> Database Acuan Latihan
-        </button>
-        <button 
           onClick={() => setActiveTab('sessions')}
           className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
             activeTab === 'sessions' 
@@ -368,6 +358,16 @@ export default function TrainingPrograms() {
           }`}
         >
           <ListTodo size={14} /> Sesi & Jadwal Latihan
+        </button>
+        <button 
+          onClick={() => setActiveTab('database')}
+          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === 'database' 
+              ? 'border-blue-600 text-blue-600' 
+              : 'border-transparent text-slate-400 hover:text-slate-700'
+          }`}
+        >
+          <Dumbbell size={14} /> Database Acuan Latihan
         </button>
       </div>
 

@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from '../utils/endpoints';
 import Modal from '../components/Modal';
 import { 
   Plus, Award, MapPin, Calendar, Users, ShieldAlert, BadgeAlert,
-  Edit, Trash2, Scale
+  Edit, Trash2, Scale, FileSpreadsheet, FileText
 } from 'lucide-react';
 
 export default function Championships() {
@@ -315,6 +315,125 @@ export default function Championships() {
     }
   };
 
+  const downloadChampParticipantsExcel = () => {
+    try {
+      const headers = ['No', 'Nama Atlet', 'Berat Daftar', 'Kejuaraan', 'Kategori', 'Batas Kelas', 'Berat Timbang', 'Status Kelayakan', 'No Tanding', 'Medali'];
+      const rows = participants.map((p, index) => {
+        const classLimits = p.class_class_name ? `${parseFloat(p.class_min_weight)} - ${parseFloat(p.class_max_weight)} kg` : '-';
+        const weighInStatusStr = p.weigh_in_status === 'passed' ? 'Lolos' :
+                                p.weigh_in_status === 'overweight' ? 'Overweight' :
+                                p.weigh_in_status === 'underweight' ? 'Underweight' : 'Belum Timbang';
+        return [
+          index + 1,
+          p.member_name,
+          `${p.weight} kg`,
+          p.championship_name,
+          p.class_class_name ? `${p.class_category} ${p.class_age_group} (${p.class_class_name})` : p.category,
+          classLimits,
+          p.weigh_in_weight ? `${parseFloat(p.weigh_in_weight)} kg` : '-',
+          weighInStatusStr,
+          p.match_number || '-',
+          p.medal || 'belum tanding'
+        ];
+      });
+
+      const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Laporan_Timbang_Atlet_Kejuaraan.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal mendownload Excel timbang atlet');
+    }
+  };
+
+  const downloadChampParticipantsPdf = () => {
+    try {
+      const printWindow = window.open('', '_blank');
+      const titleStr = 'Laporan Kontrol Berat Badan & Timbang Atlet';
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>${titleStr}</title>
+            <style>
+              body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; padding: 20px; line-height: 1.5; }
+              h2 { margin-bottom: 5px; color: #0f172a; }
+              p { font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 20px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+              th { background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; padding: 10px 8px; text-align: left; font-weight: 600; text-transform: uppercase; color: #475569; }
+              td { border-bottom: 1px solid #f1f5f9; padding: 10px 8px; color: #334155; }
+              .text-center { text-align: center; }
+              .text-right { text-align: right; }
+              .status-lolos { color: #16a34a; font-weight: bold; }
+              .status-over { color: #dc2626; font-weight: bold; }
+              .status-under { color: #ca8a04; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <h2>${titleStr}</h2>
+            <p>Dicetak pada: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 40px;" class="text-center">No</th>
+                  <th>Nama Atlet</th>
+                  <th>Kejuaraan</th>
+                  <th>Kategori / Kelas</th>
+                  <th class="text-center">Batas Kelas</th>
+                  <th class="text-center">Timbang Aktual</th>
+                  <th class="text-center">Status Kelayakan</th>
+                  <th>No Tanding</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${participants.map((p, idx) => {
+                  const classLimits = p.class_class_name ? `${parseFloat(p.class_min_weight)} - ${parseFloat(p.class_max_weight)} kg` : '-';
+                  let statusHtml = '<span>Belum Timbang</span>';
+                  if (p.weigh_in_status === 'passed') {
+                    statusHtml = '<span class="status-lolos">Lolos</span>';
+                  } else if (p.weigh_in_status === 'overweight') {
+                    statusHtml = '<span class="status-over">Overweight</span>';
+                  } else if (p.weigh_in_status === 'underweight') {
+                    statusHtml = '<span class="status-under">Underweight</span>';
+                  }
+                  
+                  return `
+                    <tr>
+                      <td class="text-center">${idx + 1}</td>
+                      <td style="font-weight: 500;">${p.member_name} (Daftar: ${p.weight} kg)</td>
+                      <td>${p.championship_name}</td>
+                      <td>${p.class_class_name ? `${p.class_category} ${p.class_age_group} (${p.class_class_name})` : p.category}</td>
+                      <td class="text-center">${classLimits}</td>
+                      <td class="text-center" style="font-weight: 600;">${p.weigh_in_weight ? `${parseFloat(p.weigh_in_weight)} kg` : '-'}</td>
+                      <td class="text-center">${statusHtml}</td>
+                      <td>${p.match_number || '-'}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+            <script>
+              window.onload = function() {
+                window.print();
+                window.close();
+              }
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal mencetak PDF timbang atlet');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -425,7 +544,25 @@ export default function Championships() {
 
           {/* Participants list */}
           <div className="glass-panel p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-            <h3 className="font-semibold text-sm text-slate-200 pb-2 border-b border-slate-800">Daftar Atlet Turnamen</h3>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800">
+              <h3 className="font-semibold text-sm text-slate-200">Daftar Atlet Turnamen</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={downloadChampParticipantsExcel}
+                  className="px-3 py-1.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-emerald-600/10"
+                  title="Download Excel"
+                >
+                  <FileSpreadsheet size={13} /> Excel
+                </button>
+                <button
+                  onClick={downloadChampParticipantsPdf}
+                  className="px-3 py-1.5 text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-red-600/20"
+                  title="Download PDF"
+                >
+                  <FileText size={13} /> PDF
+                </button>
+              </div>
+            </div>
             
             {participants.length === 0 ? (
               <p className="text-xs text-slate-500 text-center py-6">Belum ada atlet terdaftar dalam turnamen.</p>

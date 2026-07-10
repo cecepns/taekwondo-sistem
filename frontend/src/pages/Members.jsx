@@ -113,8 +113,8 @@ export default function Members() {
   // Form Submit (Create or Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.birth_date || !formData.whatsapp) {
-      return toast.error('Lengkapi semua kolom wajib!');
+    if (!formData.name) {
+      return toast.error('Lengkapi semua kolom wajib (Nama)!');
     }
 
     const payload = new FormData();
@@ -498,14 +498,13 @@ export default function Members() {
 
             {/* No WhatsApp */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Nomor WhatsApp *</label>
+              <label className="font-semibold text-slate-300">Nomor WhatsApp</label>
               <input
                 type="text"
                 placeholder="0812xxxxxxxx"
                 value={formData.whatsapp}
                 onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
                 className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
-                required
               />
             </div>
 
@@ -550,13 +549,12 @@ export default function Members() {
 
             {/* Birth Date */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Tanggal Lahir *</label>
+              <label className="font-semibold text-slate-300">Tanggal Lahir</label>
               <input
                 type="date"
                 value={formData.birth_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, birth_date: e.target.value }))}
                 className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-blue-500"
-                required
               />
             </div>
 

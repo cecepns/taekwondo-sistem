@@ -754,7 +754,7 @@ app.post('/api/members', authenticateToken, checkRole(['super_admin', 'admin']),
   const { name, gender, birth_place, birth_date, parent_name, whatsapp, school, dojang, belt_id, weight, height, blood_type, address, status, joined_date, notes, class_ids } = req.body;
 
   // Compute auto age
-  const birthYear = new Date(birth_date).getFullYear();
+  const birthYear = birth_date ? new Date(birth_date).getFullYear() : new Date().getFullYear();
   const currentYear = new Date().getFullYear();
   const age = currentYear - birthYear;
 
@@ -775,9 +775,9 @@ app.post('/api/members', authenticateToken, checkRole(['super_admin', 'admin']),
     name,
     gender,
     birth_place,
-    birth_date,
+    birth_date: birth_date ? birth_date : null,
     parent_name,
-    whatsapp,
+    whatsapp: whatsapp ? whatsapp : null,
     school,
     dojang: dojang || '',
     belt_id: belt_id ? parseInt(belt_id) : null,
@@ -852,9 +852,9 @@ app.put('/api/members/:id', authenticateToken, checkRole(['super_admin', 'admin'
     name: name || existing.name,
     gender: gender || existing.gender,
     birth_place: birth_place || existing.birth_place,
-    birth_date: birth_date || existing.birth_date,
+    birth_date: birth_date ? birth_date : null,
     parent_name: parent_name || existing.parent_name,
-    whatsapp: whatsapp || existing.whatsapp,
+    whatsapp: whatsapp ? whatsapp : null,
     school: school || existing.school,
     dojang: dojang !== undefined ? dojang : existing.dojang,
     belt_id: belt_id ? parseInt(belt_id) : existing.belt_id,
