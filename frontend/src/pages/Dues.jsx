@@ -565,6 +565,136 @@ export default function Dues({ user, settings }) {
     runDownload();
   };
 
+  const downloadUnpaidExcel = () => {
+    try {
+      const headers = ['No', 'Nama Anggota', 'No Anggota', 'Dojang', 'Jumlah Tunggakan', 'Bulan Tunggakan', 'Total Tagihan'];
+      const rows = filteredUnpaidDues.map((u, index) => {
+        const filteredMonths = u.unpaid_months.filter(m => {
+          const matchesM = filterMonth ? parseInt(m.month) === parseInt(filterMonth) : true;
+          const matchesY = filterYear ? parseInt(m.year) === parseInt(filterYear) : true;
+          return matchesM && matchesY;
+        });
+        const defaultDuesRate = parseFloat(settings?.default_dues_amount) || 85000;
+        const bill = filteredMonths.length * defaultDuesRate;
+
+        return [
+          index + 1,
+          u.member_name,
+          u.member_number,
+          u.dojang || '-',
+          `${filteredMonths.length} Bulan`,
+          filteredMonths.map(m => `${getMonthName(m.month)} ${m.year}`).join('; '),
+          `Rp ${bill.toLocaleString()}`
+        ];
+      });
+
+      const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      const filename = `Laporan_Tunggakan_Iuran_${filterDojang ? `Dojang_${filterDojang}_` : ''}${filterMonth ? `Bulan_${filterMonth}_` : ''}${filterYear}.csv`;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal mendownload Excel tunggakan');
+    }
+  };
+
+  const downloadUnpaidPdf = () => {
+    try {
+      const printWindow = window.open('', '_blank');
+      const titleStr = `Laporan Tunggakan Tagihan - ${filterMonth ? getMonthName(parseInt(filterMonth)) : 'Semua Bulan'} ${filterYear}`;
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>${titleStr}</title>
+            <style>
+              body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1e293b; padding: 20px; line-height: 1.5; }
+              h2 { margin-bottom: 5px; color: #0f172a; }
+              p { font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 20px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+              th { background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; padding: 10px 8px; text-align: left; font-weight: 600; text-transform: uppercase; color: #475569; }
+              td { border-bottom: 1px solid #f1f5f9; padding: 10px 8px; color: #334155; }
+              .text-center { text-align: center; }
+              .text-right { text-align: right; font-weight: bold; }
+              .status { font-weight: bold; text-transform: uppercase; color: #dc2626; }
+            </style>
+          </head>
+          <body>
+            <h2>${titleStr}</h2>
+            <p>Dojang: ${filterDojang || 'Semua Dojang'} | Dicetak pada: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 40px;" class="text-center">No</th>
+                  <th>Nama Anggota</th>
+                  <th>No Anggota</th>
+                  <th>Dojang</th>
+                  <th>Bulan Tunggakan</th>
+                  <th class="text-center">Jumlah</th>
+                  <th class="text-right">Total Tagihan</th>
+                </tr>
+              </thead>
+              <tbody>
+                \${filteredUnpaidDues.map((u, idx) => {
+                  const filteredMonths = u.unpaid_months.filter(m => {
+                    const matchesM = filterMonth ? parseInt(m.month) === parseInt(filterMonth) : true;
+                    const matchesY = filterYear ? parseInt(m.year) === parseInt(filterYear) : true;
+                    return matchesM && matchesY;
+                  });
+                  const defaultDuesRate = parseFloat(settings?.default_dues_amount) || 85000;
+                  const bill = filteredMonths.length * defaultDuesRate;
+                  return \`
+                    <tr>
+                      <td class="text-center">\${idx + 1}</td>
+                      <td style="font-weight: 500;">\${u.member_name}</td>
+                      <td>\${u.member_number}</td>
+                      <td>\${u.dojang || '-'}</td>
+                      <td>
+                        \${filteredMonths.map(m => getMonthName(m.month) + ' ' + m.year).join(', ')}
+                      </td>
+                      <td class="text-center font-semibold text-red-650">\${filteredMonths.length} Bulan</td>
+                      <td class="text-right">Rp \${bill.toLocaleString()}</td>
+                    </tr>
+                  \`;
+                }).join('')}
+                <tr>
+                  <td colspan="6" class="text-right" style="padding-top: 15px; border-bottom: none;">ESTIMASI TOTAL TAGIHAN TUNGGAKAN:</td>
+                  <td class="text-right" style="padding-top: 15px; border-bottom: none; font-size: 13px; color: #dc2626;">
+                    Rp \${filteredUnpaidDues.reduce((sum, u) => {
+                      const filteredMonths = u.unpaid_months.filter(m => {
+                        const matchesM = filterMonth ? parseInt(m.month) === parseInt(filterMonth) : true;
+                        const matchesY = filterYear ? parseInt(m.year) === parseInt(filterYear) : true;
+                        return matchesM && matchesY;
+                      });
+                      const defaultDuesRate = parseFloat(settings?.default_dues_amount) || 85000;
+                      return sum + (filteredMonths.length * defaultDuesRate);
+                    }, 0).toLocaleString()}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <script>
+              window.onload = function() {
+                window.print();
+                window.close();
+              }
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal mencetak PDF');
+    }
+  };
+
   const reactSelectCustomStyles = {
     control: (provided, state) => ({
       ...provided,
@@ -959,6 +1089,21 @@ export default function Dues({ user, settings }) {
                 className="w-full md:w-20 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-655 focus:outline-none"
                 placeholder="Tahun"
               />
+
+              <button
+                onClick={downloadUnpaidExcel}
+                className="w-full md:w-auto px-3 py-1.5 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-emerald-600/10"
+                title="Download Excel"
+              >
+                <FileSpreadsheet size={13} /> Excel
+              </button>
+              <button
+                onClick={downloadUnpaidPdf}
+                className="w-full md:w-auto px-3 py-1.5 text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-md shadow-red-600/20"
+                title="Download PDF"
+              >
+                <FileText size={13} /> PDF
+              </button>
             </div>
             <div className="text-slate-600 text-xs flex items-center justify-start md:justify-end gap-1.5">
               <AlertTriangle size={15} className="text-yellow-600 flex-shrink-0" />
