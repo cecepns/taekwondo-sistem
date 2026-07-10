@@ -439,8 +439,8 @@ export default function Championships() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-100">Pendaftaran & Hasil Championship</h2>
-          <p className="text-xs text-slate-400">Kelola ajang kompetisi, kualifikasi kelas berat, dan medali atlet</p>
+          <h2 className="text-xl font-bold text-slate-800">Pendaftaran & Hasil Championship</h2>
+          <p className="text-xs text-slate-500">Kelola ajang kompetisi, kualifikasi kelas berat, dan medali atlet</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -448,7 +448,7 @@ export default function Championships() {
             <>
               <button 
                 onClick={() => setIsRegOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
               >
                 <Users size={14} /> Daftar Peserta
               </button>
@@ -475,13 +475,13 @@ export default function Championships() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex border-b border-slate-200">
         <button
           onClick={() => setActiveTab('events')}
           className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
             activeTab === 'events'
-              ? 'border-blue-500 text-blue-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-400 hover:text-slate-700'
           }`}
         >
           Event & Atlet
@@ -490,8 +490,8 @@ export default function Championships() {
           onClick={() => setActiveTab('classes')}
           className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
             activeTab === 'classes'
-              ? 'border-blue-500 text-blue-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-400 hover:text-slate-700'
           }`}
         >
           Database Kelas Tanding
@@ -503,28 +503,28 @@ export default function Championships() {
           {/* Main events grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {championships.map(c => (
-              <div key={c.id} className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+              <div key={c.id} className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="px-2.5 py-0.5 rounded bg-blue-600/10 border border-blue-500/20 text-blue-400 font-bold uppercase text-[9px] tracking-wider">
+                    <span className="px-2.5 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-600 font-bold uppercase text-[9px] tracking-wider">
                       Level {c.level}
                     </span>
-                    <span className="text-[10px] text-slate-500">{new Date(c.date).toLocaleDateString('id-ID')}</span>
+                    <span className="text-[10px] text-slate-400">{new Date(c.date).toLocaleDateString('id-ID')}</span>
                   </div>
                   
-                  <h3 className="font-bold text-slate-100 text-sm leading-snug">{c.name}</h3>
-                  <p className="text-xs text-slate-450 leading-relaxed">{c.description || 'Tidak ada deskripsi'}</p>
+                  <h3 className="font-bold text-slate-800 text-sm leading-snug">{c.name}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">{c.description || 'Tidak ada deskripsi'}</p>
                 </div>
 
-                <div className="border-t border-slate-850 pt-4 flex items-center justify-between text-xs text-slate-400">
+                <div className="border-t border-slate-100 pt-4 flex items-center justify-between text-xs text-slate-500">
                   <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                    <span className="flex items-center gap-1"><MapPin size={13} className="text-slate-500" /> {c.location}</span>
-                    <span className="flex items-center gap-1"><Award size={13} className="text-slate-500" /> Penyelenggara: {c.organizer}</span>
+                    <span className="flex items-center gap-1"><MapPin size={13} className="text-slate-400" /> {c.location}</span>
+                    <span className="flex items-center gap-1"><Award size={13} className="text-slate-400" /> Penyelenggara: {c.organizer}</span>
                   </div>
                   <div className="flex gap-2">
                     <button 
                       onClick={() => startEditChampionship(c)}
-                      className="p-1 text-slate-400 hover:text-blue-500 transition-colors"
+                      className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                       title="Edit"
                     >
                       <Edit size={14} />
@@ -543,9 +543,9 @@ export default function Championships() {
           </div>
 
           {/* Participants list */}
-          <div className="glass-panel p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800">
-              <h3 className="font-semibold text-sm text-slate-200">Daftar Atlet Turnamen</h3>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200">
+              <h3 className="font-semibold text-sm text-slate-800">Daftar Atlet Turnamen</h3>
               <div className="flex items-center gap-2">
                 <button
                   onClick={downloadChampParticipantsExcel}
@@ -565,12 +565,12 @@ export default function Championships() {
             </div>
             
             {participants.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-6">Belum ada atlet terdaftar dalam turnamen.</p>
+              <p className="text-xs text-slate-400 text-center py-6">Belum ada atlet terdaftar dalam turnamen.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase text-[10px]">
+                    <tr className="border-b border-slate-200 text-slate-400 font-semibold uppercase text-[10px]">
                       <th className="py-3 px-2">Atlet</th>
                       <th className="py-3 px-2">Kejuaraan</th>
                       <th className="py-3 px-2">Kategori / Kelas</th>
@@ -582,49 +582,49 @@ export default function Championships() {
                       <th className="py-3 px-2 text-right">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/50">
+                  <tbody className="divide-y divide-slate-100">
                     {participants.map(p => (
-                      <tr key={p.id} className="hover:bg-slate-800/20">
-                        <td className="py-3 px-2 font-medium text-slate-200">
+                      <tr key={p.id} className="hover:bg-slate-50">
+                        <td className="py-3 px-2 font-medium text-slate-800">
                           <div>{p.member_name}</div>
                           <div className="text-[10px] text-slate-500">Daftar: {p.weight} kg</div>
                         </td>
-                        <td className="py-3 px-2 text-slate-400">{p.championship_name}</td>
-                        <td className="py-3 px-2 text-slate-350">
+                        <td className="py-3 px-2 text-slate-600">{p.championship_name}</td>
+                        <td className="py-3 px-2 text-slate-700">
                           {p.class_class_name ? (
                             <div>
-                              <div className="font-medium text-slate-200">{p.class_category} - {p.class_age_group}</div>
-                              <div className="text-[10px] text-slate-450">{p.class_class_name} ({p.class_gender === 'Semua' ? 'L/P' : p.class_gender})</div>
+                              <div className="font-medium text-slate-800">{p.class_category} - {p.class_age_group}</div>
+                              <div className="text-[10px] text-slate-500">{p.class_class_name} ({p.class_gender === 'Semua' ? 'L/P' : p.class_gender})</div>
                             </div>
                           ) : (
                             <span>{p.category}</span>
                           )}
                         </td>
-                        <td className="py-3 px-2 text-center text-slate-400">
+                        <td className="py-3 px-2 text-center text-slate-600">
                           {p.class_class_name ? `${parseFloat(p.class_min_weight)} - ${parseFloat(p.class_max_weight)} kg` : '-'}
                         </td>
-                        <td className="py-3 px-2 text-center text-slate-200 font-semibold font-mono">
+                        <td className="py-3 px-2 text-center text-slate-800 font-semibold font-mono">
                           {p.weigh_in_weight ? `${parseFloat(p.weigh_in_weight)} kg` : '-'}
                         </td>
                         <td className="py-3 px-2 text-center">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            p.weigh_in_status === 'passed' ? 'bg-emerald-500/10 text-emerald-450 border border-emerald-500/20' :
-                            p.weigh_in_status === 'overweight' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                            p.weigh_in_status === 'underweight' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
-                            'bg-slate-800 text-slate-450 border border-slate-700'
+                            p.weigh_in_status === 'passed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
+                            p.weigh_in_status === 'overweight' ? 'bg-red-50 text-red-600 border border-red-200' :
+                            p.weigh_in_status === 'underweight' ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' :
+                            'bg-slate-50 text-slate-500 border border-slate-200'
                           }`}>
                             {p.weigh_in_status === 'passed' ? '✓ Lolos' :
                              p.weigh_in_status === 'overweight' ? '✗ Overweight' :
                              p.weigh_in_status === 'underweight' ? '✗ Underweight' : 'Belum Timbang'}
                           </span>
                         </td>
-                        <td className="py-3 px-2 text-slate-400">{p.match_number || '-'}</td>
+                        <td className="py-3 px-2 text-slate-600">{p.match_number || '-'}</td>
                         <td className="py-3 px-2">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            p.medal === 'emas' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
-                            p.medal === 'perak' ? 'bg-slate-300/10 text-slate-350 border border-slate-400/20' :
-                            p.medal === 'perunggu' ? 'bg-amber-600/10 text-amber-500 border border-amber-600/20' :
-                            'bg-slate-850 text-slate-500'
+                            p.medal === 'emas' ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' :
+                            p.medal === 'perak' ? 'bg-slate-100 text-slate-600 border border-slate-200' :
+                            p.medal === 'perunggu' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
+                            'bg-slate-50 text-slate-400'
                           }`}>
                             🏆 {p.medal || 'belum tanding'}
                           </span>
@@ -637,14 +637,14 @@ export default function Championships() {
                                 setWeighInWeight(p.weigh_in_weight || '');
                                 setIsWeighInOpen(true);
                               }}
-                              className="p-1 text-slate-400 hover:text-emerald-400 transition-colors"
+                              className="p-1 text-slate-400 hover:text-emerald-600 transition-colors"
                               title="Timbang / Kontrol Berat"
                             >
                               <Scale size={14} />
                             </button>
                             <button 
                               onClick={() => startEditParticipant(p)}
-                              className="p-1 text-slate-400 hover:text-blue-500 transition-colors"
+                              className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                               title="Edit"
                             >
                               <Edit size={14} />
@@ -668,18 +668,18 @@ export default function Championships() {
         </>
       ) : (
         /* Database Kelas Tanding Panel */
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-          <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-            <h3 className="font-semibold text-sm text-slate-200">Konfigurasi Kategori & Kelas Tanding</h3>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+            <h3 className="font-semibold text-sm text-slate-800">Konfigurasi Kategori & Kelas Tanding</h3>
           </div>
 
           {classes.length === 0 ? (
-            <p className="text-xs text-slate-500 text-center py-6">Belum ada data kategori dan kelas tanding.</p>
+            <p className="text-xs text-slate-400 text-center py-6">Belum ada data kategori dan kelas tanding.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase">
+                  <tr className="border-b border-slate-200 text-slate-400 font-semibold uppercase">
                     <th className="py-3 px-2">Kategori</th>
                     <th className="py-3 px-2">Golongan Usia</th>
                     <th className="py-3 px-2">Jenis Kelamin</th>
@@ -689,22 +689,22 @@ export default function Championships() {
                     <th className="py-3 px-2 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/50">
+                <tbody className="divide-y divide-slate-100">
                   {classes.map(c => (
-                    <tr key={c.id} className="hover:bg-slate-800/20">
-                      <td className="py-3 px-2 font-medium text-slate-200">{c.category}</td>
-                      <td className="py-3 px-2 text-slate-350">{c.age_group}</td>
-                      <td className="py-3 px-2 text-slate-400">
+                    <tr key={c.id} className="hover:bg-slate-50">
+                      <td className="py-3 px-2 font-medium text-slate-800">{c.category}</td>
+                      <td className="py-3 px-2 text-slate-600">{c.age_group}</td>
+                      <td className="py-3 px-2 text-slate-600">
                         {c.gender === 'Semua' ? 'Putra & Putri' : c.gender === 'L' ? 'Putra Only' : 'Putri Only'}
                       </td>
-                      <td className="py-3 px-2 text-slate-200 font-semibold">{c.class_name}</td>
-                      <td className="py-3 px-2 text-center text-slate-400">{parseFloat(c.min_weight)} kg</td>
-                      <td className="py-3 px-2 text-center text-slate-400">{parseFloat(c.max_weight)} kg</td>
+                      <td className="py-3 px-2 text-slate-800 font-semibold">{c.class_name}</td>
+                      <td className="py-3 px-2 text-center text-slate-600">{parseFloat(c.min_weight)} kg</td>
+                      <td className="py-3 px-2 text-center text-slate-600">{parseFloat(c.max_weight)} kg</td>
                       <td className="py-3 px-2 text-right">
                         <div className="flex justify-end gap-1.5">
                           <button 
                             onClick={() => startEditClass(c)}
-                            className="p-1 text-slate-400 hover:text-blue-500 transition-colors"
+                            className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                             title="Edit"
                           >
                             <Edit size={14} />
@@ -737,38 +737,38 @@ export default function Championships() {
         }} 
         title={editingChampionship ? "Edit Event Championship" : "Buat Event Championship Baru"}
       >
-        <form onSubmit={handleChampSubmit} className="space-y-5 text-xs text-slate-350">
+        <form onSubmit={handleChampSubmit} className="space-y-5 text-xs text-slate-600">
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Nama Turnamen / Kejuaraan *</label>
+            <label className="font-semibold text-slate-700">Nama Turnamen / Kejuaraan *</label>
             <input
               type="text"
               placeholder="Contoh: Piala Walikota Depok V 2026"
               value={champForm.name}
               onChange={(e) => setChampForm(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Lokasi Penyelenggaraan *</label>
+              <label className="font-semibold text-slate-700">Lokasi Penyelenggaraan *</label>
               <input
                 type="text"
                 placeholder="Contoh: GOR Kartika, Depok"
                 value={champForm.location}
                 onChange={(e) => setChampForm(prev => ({ ...prev, location: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               />
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Tanggal Pelaksanaan *</label>
+              <label className="font-semibold text-slate-700">Tanggal Pelaksanaan *</label>
               <input
                 type="date"
                 value={champForm.date}
                 onChange={(e) => setChampForm(prev => ({ ...prev, date: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               />
             </div>
@@ -776,22 +776,22 @@ export default function Championships() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Penyelenggara / Organizer *</label>
+              <label className="font-semibold text-slate-700">Penyelenggara / Organizer *</label>
               <input
                 type="text"
                 placeholder="Contoh: Pengcab TI Depok"
                 value={champForm.organizer}
                 onChange={(e) => setChampForm(prev => ({ ...prev, organizer: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               />
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Tingkat / Level Kejuaraan *</label>
+              <label className="font-semibold text-slate-700">Tingkat / Level Kejuaraan *</label>
               <select
                 value={champForm.level}
                 onChange={(e) => setChampForm(prev => ({ ...prev, level: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="internal">Internal Dojang</option>
                 <option value="regional">Regional / Kota</option>
@@ -803,16 +803,16 @@ export default function Championships() {
           </div>
 
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Deskripsi Ringkas</label>
+            <label className="font-semibold text-slate-700">Deskripsi Ringkas</label>
             <textarea
               rows="3"
               value={champForm.description}
               onChange={(e) => setChampForm(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
             />
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-850 pt-4">
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={() => { 
@@ -820,7 +820,7 @@ export default function Championships() {
                 setEditingChampionship(null); 
                 setChampForm({ name: '', location: '', date: new Date().toISOString().split('T')[0], organizer: '', level: 'internal', description: '' }); 
               }}
-              className="px-4 py-2 rounded-xl bg-slate-850 text-slate-300"
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
             >
               Batal
             </button>
@@ -844,14 +844,14 @@ export default function Championships() {
         }}
         title={editingClass ? "Edit Kelas Tanding" : "Tambah Kelas Tanding Baru"}
       >
-        <form onSubmit={handleClassSubmit} className="space-y-5 text-xs text-slate-350">
+        <form onSubmit={handleClassSubmit} className="space-y-5 text-xs text-slate-600">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Kategori Turnamen *</label>
+              <label className="font-semibold text-slate-700">Kategori Turnamen *</label>
               <select
                 value={classForm.category}
                 onChange={(e) => setClassForm(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-250"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="Kyorugi">Kyorugi (Tanding)</option>
                 <option value="Poomsae">Poomsae (Jurus)</option>
@@ -859,11 +859,11 @@ export default function Championships() {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Golongan Usia *</label>
+              <label className="font-semibold text-slate-700">Golongan Usia *</label>
               <select
                 value={classForm.age_group}
                 onChange={(e) => setClassForm(prev => ({ ...prev, age_group: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-250"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="Pracadet A">Pracadet A (Usia &lt; 9)</option>
                 <option value="Pracadet B">Pracadet B (Usia 9-11)</option>
@@ -876,11 +876,11 @@ export default function Championships() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Jenis Kelamin *</label>
+              <label className="font-semibold text-slate-700">Jenis Kelamin *</label>
               <select
                 value={classForm.gender}
                 onChange={(e) => setClassForm(prev => ({ ...prev, gender: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-250"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="Semua">Putra & Putri (L/P)</option>
                 <option value="L">Hanya Putra (L)</option>
@@ -888,13 +888,13 @@ export default function Championships() {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Nama Kelas (Under) *</label>
+              <label className="font-semibold text-slate-700">Nama Kelas (Under) *</label>
               <input
                 type="text"
                 placeholder="Contoh: Under 22kg"
                 value={classForm.class_name}
                 onChange={(e) => setClassForm(prev => ({ ...prev, class_name: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               />
             </div>
@@ -902,30 +902,30 @@ export default function Championships() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Batas Berat Minimal (kg)</label>
+              <label className="font-semibold text-slate-700">Batas Berat Minimal (kg)</label>
               <input
                 type="number"
                 step="0.01"
                 placeholder="Contoh: 20.00"
                 value={classForm.min_weight}
                 onChange={(e) => setClassForm(prev => ({ ...prev, min_weight: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               />
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Batas Berat Maksimal (kg)</label>
+              <label className="font-semibold text-slate-700">Batas Berat Maksimal (kg)</label>
               <input
                 type="number"
                 step="0.01"
                 placeholder="Contoh: 22.00"
                 value={classForm.max_weight}
                 onChange={(e) => setClassForm(prev => ({ ...prev, max_weight: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-850 pt-4">
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={() => {
@@ -933,7 +933,7 @@ export default function Championships() {
                 setEditingClass(null);
                 setClassForm({ category: 'Kyorugi', age_group: 'Pracadet A', gender: 'Semua', class_name: '', min_weight: '', max_weight: '' });
               }}
-              className="px-4 py-2 rounded-xl bg-slate-850 text-slate-300"
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
             >
               Batal
             </button>
@@ -958,22 +958,22 @@ export default function Championships() {
         title="Weigh-in / Kontrol Berat Badan Atlet"
       >
         {selectedParticipant && (
-          <form onSubmit={handleWeighInSubmit} className="space-y-5 text-xs text-slate-350">
-            <div className="p-3.5 bg-slate-900/50 border border-slate-800 rounded-xl space-y-2">
-              <div>Nama Atlet: <strong className="text-slate-100">{selectedParticipant.member_name}</strong></div>
-              <div>Kelas Tanding: <strong className="text-slate-100">{selectedParticipant.class_category || 'Kyorugi'} - {selectedParticipant.class_age_group || '-'} ({selectedParticipant.class_class_name || selectedParticipant.category})</strong></div>
-              <div>Batas Berat Kelas: <strong className="text-emerald-450">{parseFloat(selectedParticipant.class_min_weight || 0.00)} kg s/d {parseFloat(selectedParticipant.class_max_weight || 999.99)} kg</strong></div>
+          <form onSubmit={handleWeighInSubmit} className="space-y-5 text-xs text-slate-600">
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-slate-700">
+              <div>Nama Atlet: <strong className="text-slate-800">{selectedParticipant.member_name}</strong></div>
+              <div>Kelas Tanding: <strong className="text-slate-800">{selectedParticipant.class_category || 'Kyorugi'} - {selectedParticipant.class_age_group || '-'} ({selectedParticipant.class_class_name || selectedParticipant.category})</strong></div>
+              <div>Batas Berat Kelas: <strong className="text-emerald-600">{parseFloat(selectedParticipant.class_min_weight || 0.00)} kg s/d {parseFloat(selectedParticipant.class_max_weight || 999.99)} kg</strong></div>
             </div>
 
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Hasil Timbang Aktual (kg) *</label>
+              <label className="font-semibold text-slate-700">Hasil Timbang Aktual (kg) *</label>
               <input
                 type="number"
                 step="0.01"
                 placeholder="Masukkan berat badan hasil timbang"
                 value={weighInWeight}
                 onChange={(e) => setWeighInWeight(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-100 font-bold text-sm tracking-wide focus:border-blue-500 focus:outline-none"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-bold text-sm tracking-wide focus:border-blue-500 focus:outline-none"
                 required
                 autoFocus
               />
@@ -988,21 +988,21 @@ export default function Championships() {
 
               if (w > maxW) {
                 return (
-                  <div className="p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 flex items-center gap-2 font-medium">
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 flex items-center gap-2 font-medium">
                     <BadgeAlert size={16} />
                     <span>Melebihi batas maksimal kelas. Selisih +{(w - maxW).toFixed(2)} kg (OVERWEIGHT)</span>
                   </div>
                 );
               } else if (w < minW) {
                 return (
-                  <div className="p-3 bg-yellow-500/10 border border-yellow-500/25 rounded-xl text-yellow-450 flex items-center gap-2 font-medium">
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-600 flex items-center gap-2 font-medium">
                     <BadgeAlert size={16} />
                     <span>Kurang dari batas minimal kelas. Selisih -{(minW - w).toFixed(2)} kg (UNDERWEIGHT)</span>
                   </div>
                 );
               } else {
                 return (
-                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 rounded-xl text-emerald-400 flex items-center gap-2 font-medium">
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-600 flex items-center gap-2 font-medium">
                     <Award size={16} />
                     <span>Berat badan sesuai dengan kelas tanding (PASSED / LOLOS)</span>
                   </div>
@@ -1010,7 +1010,7 @@ export default function Championships() {
               }
             })()}
 
-            <div className="flex justify-end gap-3 border-t border-slate-850 pt-4">
+            <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
               <button
                 type="button"
                 onClick={() => {
@@ -1018,7 +1018,7 @@ export default function Championships() {
                   setSelectedParticipant(null);
                   setWeighInWeight('');
                 }}
-                className="px-4 py-2 rounded-xl bg-slate-850 text-slate-300"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
               >
                 Batal
               </button>
@@ -1044,16 +1044,16 @@ export default function Championships() {
         }} 
         title={editingParticipant ? "Edit Data Peserta Turnamen" : "Daftarkan Atlet ke Turnamen"}
       >
-        <form onSubmit={handleParticipantSubmit} className="space-y-5 text-xs text-slate-355">
+        <form onSubmit={handleParticipantSubmit} className="space-y-5 text-xs text-slate-600">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
             {/* Event Kejuaraan */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Pilih Turnamen *</label>
+              <label className="font-semibold text-slate-700">Pilih Turnamen *</label>
               <select
                 value={partForm.championship_id}
                 onChange={(e) => setPartForm(prev => ({ ...prev, championship_id: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               >
                 <option value="">Pilih Event</option>
@@ -1065,11 +1065,11 @@ export default function Championships() {
 
             {/* Pilih Atlet */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Pilih Atlet *</label>
+              <label className="font-semibold text-slate-700">Pilih Atlet *</label>
               <select
                 value={partForm.member_id}
                 onChange={(e) => setPartForm(prev => ({ ...prev, member_id: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               >
                 <option value="">Pilih Atlet</option>
@@ -1081,7 +1081,7 @@ export default function Championships() {
 
             {/* Pilih Kelas Tanding */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Pilih Kelas Tanding *</label>
+              <label className="font-semibold text-slate-700">Pilih Kelas Tanding *</label>
               <select
                 value={partForm.class_id || ''}
                 onChange={(e) => {
@@ -1093,7 +1093,7 @@ export default function Championships() {
                     category: selectedC ? `${selectedC.category} ${selectedC.age_group} (${selectedC.class_name})` : ''
                   }));
                 }}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               >
                 <option value="">Pilih Kelas Tanding</option>
@@ -1107,11 +1107,11 @@ export default function Championships() {
 
             {/* Sabuk */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Tingkat Sabuk Saat Tanding</label>
+              <label className="font-semibold text-slate-700">Tingkat Sabuk Saat Tanding</label>
               <select
                 value={partForm.belt_id}
                 onChange={(e) => setPartForm(prev => ({ ...prev, belt_id: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="">Pilih Sabuk</option>
                 {belts.map(b => (
@@ -1122,11 +1122,11 @@ export default function Championships() {
 
             {/* Target Medali */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Target Pencapaian *</label>
+              <label className="font-semibold text-slate-700">Target Pencapaian *</label>
               <select
                 value={partForm.target_medal}
                 onChange={(e) => setPartForm(prev => ({ ...prev, target_medal: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="Emas">Emas</option>
                 <option value="Perak">Perak</option>
@@ -1137,24 +1137,24 @@ export default function Championships() {
 
             {/* Nomor Pertandingan */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Nomor Tanding / Pool</label>
+              <label className="font-semibold text-slate-700">Nomor Tanding / Pool</label>
               <input
                 type="text"
                 placeholder="Contoh: Pool A - 04"
                 value={partForm.match_number}
                 onChange={(e) => setPartForm(prev => ({ ...prev, match_number: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               />
             </div>
 
             {/* Hasil Medali (Only when editing) */}
             {editingParticipant && (
               <div className="space-y-1 col-span-2">
-                <label className="font-semibold text-slate-300">Hasil Medali Turnamen</label>
+                <label className="font-semibold text-slate-700">Hasil Medali Turnamen</label>
                 <select
                   value={partForm.medal || ''}
                   onChange={(e) => setPartForm(prev => ({ ...prev, medal: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 >
                   <option value="">Belum Selesai / Tanpa Medali</option>
                   <option value="emas">Emas</option>
@@ -1170,13 +1170,13 @@ export default function Championships() {
             const activeClass = classes.find(c => c.id === parseInt(partForm.class_id));
             if (!activeClass) return null;
             return (
-              <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl text-slate-300 space-y-1.5">
-                <span className="font-semibold text-slate-100 text-[11px] block">Detail Batasan Kelas Terpilih:</span>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 space-y-1.5">
+                <span className="font-semibold text-slate-800 text-[11px] block">Detail Batasan Kelas Terpilih:</span>
                 <div className="grid grid-cols-2 gap-2 text-[10px]">
                   <div>Golongan: <strong>{activeClass.age_group}</strong></div>
                   <div>Kategori: <strong>{activeClass.category}</strong></div>
                   <div>Kelamin: <strong>{activeClass.gender === 'Semua' ? 'Putra & Putri' : activeClass.gender === 'L' ? 'Putra Only' : 'Putri Only'}</strong></div>
-                  <div>Rentang Berat: <strong className="text-blue-400">{parseFloat(activeClass.min_weight)} kg - {parseFloat(activeClass.max_weight)} kg</strong></div>
+                  <div>Rentang Berat: <strong className="text-blue-600">{parseFloat(activeClass.min_weight)} kg - {parseFloat(activeClass.max_weight)} kg</strong></div>
                 </div>
               </div>
             );
@@ -1184,13 +1184,13 @@ export default function Championships() {
 
           {/* Dynamic Weight Limit boundary alert indicator */}
           {weightWarning && (
-            <div className="p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 flex items-center gap-2 font-medium">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 flex items-center gap-2 font-medium">
               <BadgeAlert size={16} />
               <span>{weightWarning}</span>
             </div>
           )}
 
-          <div className="flex justify-end gap-3 border-t border-slate-850 pt-4">
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={() => { 
@@ -1199,7 +1199,7 @@ export default function Championships() {
                 setPartForm({ championship_id: '', member_id: '', match_number: '', category: '', class_id: '', belt_id: '', weight: '', target_medal: 'Emas', medal: '' }); 
                 setWeightWarning('');
               }}
-              className="px-4 py-2 rounded-xl bg-slate-850 text-slate-300"
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
             >
               Batal
             </button>
