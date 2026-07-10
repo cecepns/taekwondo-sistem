@@ -471,7 +471,7 @@ export default function Coaches() {
         </div>
 
         {/* Ringkasan Kalkulasi Honor Bulanan */}
-        <div className="bg-slate-950/25 p-4 rounded-xl border border-slate-800/80 space-y-3">
+        <div className="glass-card p-4 rounded-xl space-y-3 shadow-sm">
           <h4 className="font-bold text-xs text-slate-250 flex items-center gap-1.5 uppercase tracking-wider">
             <BadgeCent size={14} className="text-blue-400" /> Ringkasan Honor & Kehadiran Pelatih (Filter Aktif)
           </h4>
@@ -485,13 +485,13 @@ export default function Coaches() {
                   <th className="py-2.5 px-3 text-right">Total Akumulasi Honor</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <tbody className="divide-y divide-slate-800">
                 {coaches.map(c => {
                   const coachReports = filteredHonorReports.filter(r => r.coach_id === c.id);
                   const totalHadir = coachReports.filter(r => r.status === 'hadir').length;
                   const totalHonor = coachReports.reduce((sum, r) => sum + parseFloat(r.honor_calculated || 0), 0);
                   return (
-                    <tr key={c.id} className="hover:bg-slate-800/10 transition-colors">
+                    <tr key={c.id} className="hover:bg-slate-800/20 transition-colors">
                       <td className="py-2.5 px-3 font-semibold text-slate-200">{c.name}</td>
                       <td className="py-2.5 px-3 text-slate-450">Rp {parseFloat(c.base_honor).toLocaleString()} / sesi</td>
                       <td className="py-2.5 px-3 text-center text-slate-300 font-bold">{totalHadir} Sesi</td>
@@ -505,7 +505,7 @@ export default function Coaches() {
                   </tr>
                 )}
                 {coaches.length > 0 && (
-                  <tr className="font-bold border-t border-slate-800 bg-slate-900/40">
+                  <tr className="font-bold border-t border-slate-800 bg-slate-900">
                     <td colSpan="2" className="py-2.5 px-3 text-slate-300 uppercase text-[10px] tracking-wider">Total Akumulasi Seluruh Pelatih</td>
                     <td className="py-2.5 px-3 text-center text-slate-200 font-black">
                       {coaches.reduce((sum, c) => sum + filteredHonorReports.filter(r => r.coach_id === c.id && r.status === 'hadir').length, 0)} Sesi
