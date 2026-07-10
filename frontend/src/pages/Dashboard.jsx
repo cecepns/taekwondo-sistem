@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { request } from '../utils/request';
 import { API_ENDPOINTS } from '../utils/endpoints';
 import {
-  Users, UserCheck, BadgeCent, Award, ArrowUpRight, ShieldCheck, Calendar
+  Users, UserCheck, BadgeCent, Award, ArrowUpRight, ShieldCheck, Calendar,
+  UserSquare2, Dumbbell, ClipboardCheck, Settings as SettingsIcon
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -51,6 +53,10 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Load user details for sidebar roles configuration
+  const savedUser = localStorage.getItem('tms_user');
+  const user = savedUser ? JSON.parse(savedUser) : null;
+
   useEffect(() => {
     async function loadStats() {
       try {
@@ -71,6 +77,20 @@ export default function Dashboard() {
     }
     loadStats();
   }, []);
+
+  // Shortlinks definitions mapping sidebar menus
+  const shortlinkItems = [
+    { name: 'Data Anggota', path: '/members', icon: Users, roles: ['super_admin', 'admin'], color: 'from-blue-600 to-cyan-500', desc: 'Pendaftaran & profil siswa' },
+    { name: 'Data Pelatih', path: '/coaches', icon: UserSquare2, roles: ['super_admin'], color: 'from-purple-600 to-indigo-500', desc: 'Pelatih & honor absensi' },
+    { name: 'Iuran Keuangan', path: '/dues', icon: BadgeCent, roles: ['super_admin', 'admin', 'finance'], color: 'from-emerald-600 to-teal-500', desc: 'Pembayaran iuran & invoice' },
+    { name: 'Absensi Latihan', path: '/attendance', icon: Calendar, roles: ['super_admin', 'admin'], color: 'from-orange-600 to-amber-500', desc: 'Absensi siswa & pelatih' },
+    { name: 'Program & Sesi', path: '/programs', icon: Dumbbell, roles: ['super_admin'], color: 'from-pink-600 to-rose-500', desc: 'Kurikulum & rancangan sesi' },
+    { name: 'Hasil Tes Fisik', path: '/physical-tests', icon: ClipboardCheck, roles: ['super_admin', 'admin'], color: 'from-violet-600 to-fuchsia-500', desc: 'Evaluasi & target tes fisik' },
+    { name: 'Championships', path: '/championships', icon: Award, roles: ['super_admin', 'admin'], color: 'from-sky-600 to-blue-500', desc: 'Atlet & pencapaian medali' },
+    { name: 'Pengaturan Sistem', path: '/settings', icon: SettingsIcon, roles: ['super_admin'], color: 'from-slate-600 to-zinc-500', desc: 'Logo, branding, & nominal iuran' }
+  ];
+
+  const allowedShortlinks = shortlinkItems.filter(item => item.roles.includes(user?.role));
 
   // Chart datasets — derived from a single API response
   const duesChartData = {
@@ -149,9 +169,41 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Shortlinks / Quick Links Grid */}
+      {allowedShortlinks.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-350 uppercase tracking-wider">Akses Cepat Menu Utama</h4>
+            <span className="text-[10px] text-slate-500 font-semibold">Tautan langsung ke fitur terotorisasi Anda</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {allowedShortlinks.map(link => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className="group relative overflow-hidden p-4 bg-slate-900/40 hover:bg-slate-850/60 border border-slate-800 hover:border-slate-700/80 rounded-2xl transition-all duration-300 flex flex-col gap-3 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                >
+                  <div className={`p-2.5 rounded-xl bg-gradient-to-br ${link.color} text-white w-10 h-10 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon size={18} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-200 group-hover:text-blue-400 transition-colors flex items-center gap-1">
+                      {link.name}
+                      <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </h5>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-snug">{link.desc}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-
         <StatCard
           label="Total Anggota"
           value={stats.totalMembers}

@@ -529,11 +529,11 @@ export default function Dues({ user, settings }) {
   const reactSelectCustomStyles = {
     control: (provided, state) => ({
       ...provided,
-      backgroundColor: 'rgba(15, 23, 42, 0.6)',
-      borderColor: state.isFocused ? '#3b82f6' : '#1e293b',
+      backgroundColor: '#f8fafc',
+      borderColor: state.isFocused ? '#3b82f6' : '#e2e8f0',
       borderRadius: '0.75rem',
       fontSize: '12px',
-      color: '#e2e8f0',
+      color: '#1e293b',
       minHeight: '38px',
       boxShadow: 'none',
       '&:hover': {
@@ -542,8 +542,8 @@ export default function Dues({ user, settings }) {
     }),
     menu: (provided) => ({
       ...provided,
-      backgroundColor: '#0f172a',
-      border: '1px solid #1e293b',
+      backgroundColor: '#ffffff',
+      border: '1px solid #e2e8f0',
       borderRadius: '0.75rem',
       zIndex: 9999
     }),
@@ -552,26 +552,23 @@ export default function Dues({ user, settings }) {
       backgroundColor: state.isSelected 
         ? '#3b82f6' 
         : state.isFocused 
-          ? '#1e293b' 
+          ? '#f1f5f9' 
           : 'transparent',
-      color: '#f8fafc',
+      color: state.isSelected ? '#ffffff' : '#334155',
       fontSize: '12px',
-      cursor: 'pointer',
-      '&:active': {
-        backgroundColor: '#3b82f6'
-      }
+      cursor: 'pointer'
     }),
     singleValue: (provided) => ({
       ...provided,
-      color: '#e2e8f0'
+      color: '#1e293b'
     }),
     input: (provided) => ({
       ...provided,
-      color: '#e2e8f0'
+      color: '#1e293b'
     }),
     placeholder: (provided) => ({
       ...provided,
-      color: '#64748b'
+      color: '#94a3b8'
     })
   };
 
@@ -584,8 +581,8 @@ export default function Dues({ user, settings }) {
       {/* Banner */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-100">Kelola Pembayaran Iuran</h2>
-          <p className="text-xs text-slate-400">
+          <h2 className="text-xl font-bold text-slate-800">Kelola Pembayaran Iuran</h2>
+          <p className="text-xs text-slate-500">
             {activeTab === 'list' 
               ? 'Daftar riwayat penerimaan pembayaran iuran bulanan anggota' 
               : 'Daftar tagihan bulanan anggota yang belum terlunasi'}
@@ -600,13 +597,13 @@ export default function Dues({ user, settings }) {
       </div>
 
       {/* Tabs Layout */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex border-b border-slate-200">
         <button 
           onClick={() => { setActiveTab('list'); setPage(1); }}
           className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
             activeTab === 'list' 
-              ? 'border-blue-500 text-blue-500' 
-              : 'border-transparent text-slate-450 hover:text-slate-200'
+              ? 'border-blue-600 text-blue-600' 
+              : 'border-transparent text-slate-400 hover:text-slate-700'
           }`}
         >
           Riwayat Pembayaran
@@ -615,13 +612,13 @@ export default function Dues({ user, settings }) {
           onClick={() => { setActiveTab('unpaid'); setPage(1); }}
           className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
             activeTab === 'unpaid' 
-              ? 'border-blue-500 text-blue-500' 
-              : 'border-transparent text-slate-450 hover:text-slate-200'
+              ? 'border-blue-600 text-blue-600' 
+              : 'border-transparent text-slate-400 hover:text-slate-700'
           }`}
         >
           Tagihan & Penagihan
           {unpaidDues.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-red-600 text-white font-bold animate-pulse">
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-red-650 text-white font-bold animate-pulse">
               {unpaidDues.length}
             </span>
           )}
@@ -631,9 +628,9 @@ export default function Dues({ user, settings }) {
       {activeTab === 'list' ? (
         <>
           {/* Filter and Search for history list */}
-          <div className="glass-panel p-4 rounded-xl border border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-center shadow-sm">
             <div className="relative w-full md:w-80">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                 <Search size={16} />
               </span>
               <input
@@ -641,7 +638,7 @@ export default function Dues({ user, settings }) {
                 placeholder="Cari nama anggota..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-850 text-xs placeholder:text-slate-450 focus:outline-none focus:border-blue-500"
               />
             </div>
 
@@ -649,7 +646,7 @@ export default function Dues({ user, settings }) {
               <select
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(e.target.value)}
-                className="px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-none"
+                className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-650 focus:outline-none"
               >
                 <option value="">Semua Bulan</option>
                 <option value="1">Januari</option>
@@ -670,7 +667,7 @@ export default function Dues({ user, settings }) {
                 type="number"
                 value={filterYear}
                 onChange={(e) => setFilterYear(parseInt(e.target.value) || new Date().getFullYear())}
-                className="w-20 px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-[11px] text-slate-300 focus:outline-none"
+                className="w-20 px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] text-slate-650 focus:outline-none"
                 placeholder="Tahun"
               />
 
@@ -692,20 +689,20 @@ export default function Dues({ user, settings }) {
           </div>
 
           {/* Dues History Table */}
-          <div className="glass-panel rounded-xl border border-slate-800 shadow-xl overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
             {isLoading ? (
               <div className="p-12 text-center text-slate-400">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
               </div>
             ) : dues.length === 0 ? (
-              <div className="p-12 text-center text-slate-550 text-xs">
+              <div className="p-12 text-center text-slate-500 text-xs">
                 Tidak ada data pembayaran iuran ditemukan
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-950/40 border-b border-slate-800 text-slate-400 font-semibold uppercase">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase">
                       <th className="p-4">Anggota</th>
                       <th className="p-4">Iuran Bulan</th>
                       <th className="p-4">Tanggal Bayar</th>
@@ -714,23 +711,23 @@ export default function Dues({ user, settings }) {
                       <th className="p-4 text-center">Bukti / Aksi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-100">
                     {dues.map(d => (
-                      <tr key={d.id} className="hover:bg-slate-850/40">
-                        <td className="p-4">
-                          <div className="font-semibold text-slate-200">{d.member_name}</div>
+                      <tr key={d.id} className="hover:bg-slate-50/50">
+                        <td className="p-4 font-semibold text-slate-800">
+                          {d.member_name}
                         </td>
-                        <td className="p-4 text-slate-300 font-medium">
+                        <td className="p-4 text-slate-650 font-medium">
                           {getMonthName(d.month)} {d.year}
                         </td>
-                        <td className="p-4 text-slate-400">
+                        <td className="p-4 text-slate-500">
                           {new Date(d.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
-                        <td className="p-4 text-slate-100 font-semibold">
+                        <td className="p-4 text-slate-800 font-semibold">
                           Rp {parseFloat(d.amount).toLocaleString()}
                         </td>
                         <td className="p-4">
-                          <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-250 uppercase text-[10px] font-bold">
+                          <span className="px-2.5 py-0.5 rounded bg-blue-50 border border-blue-100 text-blue-700 uppercase text-[10px] font-bold">
                             {d.method}
                           </span>
                         </td>
@@ -741,7 +738,7 @@ export default function Dues({ user, settings }) {
                                 href={d.attachment} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="p-1.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-[10px] font-semibold transition-colors"
+                                className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-semibold transition-colors"
                               >
                                 Lihat Bukti
                               </a>
@@ -751,21 +748,21 @@ export default function Dues({ user, settings }) {
                                 setSelectedReceipt(d);
                                 setIsReceiptOpen(true);
                               }}
-                              className="p-1.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 transition-colors inline-flex items-center gap-1 text-[10px] font-medium"
+                              className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-colors inline-flex items-center gap-1 text-[10px] font-medium"
                               title="Print Receipt"
                             >
                               <Printer size={13} /> Kuitansi
                             </button>
                             <button 
                               onClick={() => startEditDue(d)}
-                              className="p-1.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 hover:text-blue-400 transition-colors"
+                              className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-650 border border-slate-200 hover:text-blue-600 transition-colors"
                               title="Edit"
                             >
                               <Edit size={13} />
                             </button>
                             <button 
                               onClick={() => handleDueDelete(d.id)}
-                              className="p-1.5 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 hover:text-red-400 transition-colors"
+                              className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-650 border border-slate-200 hover:text-red-600 transition-colors"
                               title="Hapus"
                             >
                               <Trash2 size={13} />
@@ -795,9 +792,9 @@ export default function Dues({ user, settings }) {
       ) : (
         <>
           {/* Search bar for unpaid list */}
-          <div className="glass-panel p-4 rounded-xl border border-slate-800 flex justify-between items-center">
+          <div className="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
             <div className="relative w-full md:w-80">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
                 <Search size={16} />
               </span>
               <input
@@ -805,17 +802,17 @@ export default function Dues({ user, settings }) {
                 placeholder="Cari nama anggota belum bayar..."
                 value={unpaidSearch}
                 onChange={(e) => setUnpaidSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-850 text-xs placeholder:text-slate-450 focus:outline-none focus:border-blue-500"
               />
             </div>
-            <div className="text-slate-400 text-xs flex items-center gap-1.5">
-              <AlertTriangle size={15} className="text-yellow-500" />
-              <span>Default Iuran: <strong className="text-slate-200">Rp {parseFloat(settings?.default_dues_amount || 85000).toLocaleString()} / bulan</strong></span>
+            <div className="text-slate-600 text-xs flex items-center gap-1.5">
+              <AlertTriangle size={15} className="text-yellow-600" />
+              <span>Default Iuran: <strong className="text-slate-800">Rp {parseFloat(settings?.default_dues_amount || 85000).toLocaleString()} / bulan</strong></span>
             </div>
           </div>
 
           {/* Unpaid Bills Table */}
-          <div className="glass-panel rounded-xl border border-slate-800 shadow-xl overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden animate-fade-in">
             {isUnpaidLoading ? (
               <div className="p-12 text-center text-slate-400">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
@@ -828,7 +825,7 @@ export default function Dues({ user, settings }) {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-950/40 border-b border-slate-800 text-slate-400 font-semibold uppercase">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase">
                       <th className="p-4" style={{ width: '50px' }}>No</th>
                       <th className="p-4">Anggota</th>
                       <th className="p-4">Bulan Belum Dibayar</th>
@@ -837,44 +834,44 @@ export default function Dues({ user, settings }) {
                       <th className="p-4 text-center">Aksi Penagihan</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-100">
                     {filteredUnpaidDues.map((u, idx) => (
-                      <tr key={u.member_id} className="hover:bg-slate-850/40">
-                        <td className="p-4 text-slate-400 font-semibold">{idx + 1}</td>
-                        <td className="p-4">
-                          <div className="font-semibold text-slate-200">{u.member_name}</div>
+                      <tr key={u.member_id} className="hover:bg-slate-50/50">
+                        <td className="p-4 text-slate-500 font-semibold">{idx + 1}</td>
+                        <td className="p-4 font-semibold text-slate-800">
+                          {u.member_name}
                         </td>
-                        <td className="p-4 text-slate-350">
+                        <td className="p-4 text-slate-650">
                           <div className="flex flex-wrap gap-1">
                             {u.unpaid_months.slice(0, 5).map((m, i) => (
-                              <span key={i} className="px-2 py-0.5 text-[10px] rounded bg-red-950/40 border border-red-900/40 text-red-400">
+                              <span key={i} className="px-2 py-0.5 text-[10px] rounded bg-red-50 border border-red-100 text-red-600 font-semibold">
                                 {getMonthName(m.month)} {m.year}
                               </span>
                             ))}
                             {u.unpaid_months.length > 5 && (
-                              <span className="px-2 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-700 text-slate-400 font-bold">
+                              <span className="px-2 py-0.5 text-[10px] rounded bg-slate-100 border border-slate-200 text-slate-500 font-bold">
                                 +{u.unpaid_months.length - 5} bulan lagi
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="p-4 text-center font-bold text-red-500">
+                        <td className="p-4 text-center font-bold text-red-600">
                           {u.total_unpaid} Bulan
                         </td>
-                        <td className="p-4 text-right font-bold text-slate-100">
+                        <td className="p-4 text-right font-bold text-slate-800">
                           Rp {parseFloat(u.total_bill).toLocaleString()}
                         </td>
                         <td className="p-4">
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => printInvoice(u)}
-                              className="px-2.5 py-1.5 rounded bg-slate-850 hover:bg-slate-800 border border-slate-750 text-slate-300 font-semibold text-[10px] flex items-center gap-1 transition-all"
+                              className="px-2.5 py-1.5 rounded bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-[10px] flex items-center gap-1 transition-all shadow-sm"
                             >
                               <Printer size={13} /> Cetak Invoice
                             </button>
                             <button
                               onClick={() => handlePayUnpaid(u)}
-                              className="px-2.5 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[10px] transition-all"
+                              className="px-2.5 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[10px] transition-all shadow-sm"
                             >
                               Bayar / Lunasi
                             </button>
@@ -900,12 +897,12 @@ export default function Dues({ user, settings }) {
         }} 
         title={editingDue ? "Edit Transaksi Iuran" : "Catat Pembayaran Iuran"}
       >
-        <form onSubmit={handlePaySubmit} className="space-y-6 text-xs text-slate-300">
+        <form onSubmit={handlePaySubmit} className="space-y-6 text-xs text-slate-650">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
             {/* Pilih Anggota */}
             <div className="space-y-1 md:col-span-2">
-              <label className="font-semibold text-slate-350 block mb-1">Pilih Anggota *</label>
+              <label className="font-semibold text-slate-600 block mb-1">Pilih Anggota *</label>
               <AsyncSelect
                 cacheOptions
                 defaultOptions
@@ -925,23 +922,23 @@ export default function Dues({ user, settings }) {
 
             {/* Tahun */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Tahun *</label>
+              <label className="font-semibold text-slate-600 block">Tahun *</label>
               <input
                 type="number"
                 value={paymentForm.year}
                 onChange={(e) => setPaymentForm(prev => ({ ...prev, year: parseInt(e.target.value) }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               />
             </div>
 
             {/* Metode Pembayaran */}
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Metode Bayar *</label>
+              <label className="font-semibold text-slate-600 block">Metode Bayar *</label>
               <select
                 value={paymentForm.method}
                 onChange={(e) => setPaymentForm(prev => ({ ...prev, method: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="cash">Cash / Tunai</option>
                 <option value="transfer">Bank Transfer</option>
@@ -953,11 +950,11 @@ export default function Dues({ user, settings }) {
           {/* Bulan Checklists or Dropdown */}
           {editingDue ? (
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Bulan Pembayaran *</label>
+              <label className="font-semibold text-slate-600 block">Bulan Pembayaran *</label>
               <select
                 value={paymentForm.months[0] || ''}
                 onChange={(e) => setPaymentForm(prev => ({ ...prev, months: [parseInt(e.target.value)] }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
@@ -967,15 +964,15 @@ export default function Dues({ user, settings }) {
             </div>
           ) : (
             <div className="space-y-1.5">
-              <label className="font-semibold text-slate-300 block">Pilih Bulan Pembayaran *</label>
+              <label className="font-semibold text-slate-600 block">Pilih Bulan Pembayaran *</label>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
                   <label 
                     key={m}
                     className={`py-2 px-1 rounded-lg border text-center font-medium block cursor-pointer transition-all ${
                       paymentForm.months.includes(m)
-                        ? 'bg-blue-600/10 border-blue-500 text-blue-400 font-bold'
-                        : 'bg-slate-950/20 border-slate-800 text-slate-400 hover:border-slate-700'
+                        ? 'bg-blue-50 border-blue-500 text-blue-600 font-bold'
+                        : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
                     }`}
                   >
                     <input
@@ -993,13 +990,13 @@ export default function Dues({ user, settings }) {
 
           {/* Nominal Bayar */}
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Total Nominal Pembayaran (Rp) *</label>
+            <label className="font-semibold text-slate-600 block">Total Nominal Pembayaran (Rp) *</label>
             <input
               type="number"
               placeholder="Total pembayaran otomatis terisi"
               value={paymentForm.amount}
               onChange={(e) => setPaymentForm(prev => ({ ...prev, amount: e.target.value }))}
-              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 font-semibold"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:outline-none focus:border-blue-500"
               required
             />
           </div>
@@ -1007,11 +1004,11 @@ export default function Dues({ user, settings }) {
           {/* Status Pembayaran (Only when editing) */}
           {editingDue && (
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Status Pembayaran *</label>
+              <label className="font-semibold text-slate-600 block">Status Pembayaran *</label>
               <select
                 value={paymentForm.status}
                 onChange={(e) => setPaymentForm(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
                 required
               >
                 <option value="sudah_bayar">Sudah Bayar</option>
@@ -1023,27 +1020,27 @@ export default function Dues({ user, settings }) {
 
           {/* Upload attachment */}
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300 block">Bukti Bayar / Slip Transfer (Optional)</label>
+            <label className="font-semibold text-slate-600 block">Bukti Bayar / Slip Transfer (Optional)</label>
             <input 
               type="file" 
               onChange={(e) => setAttachment(e.target.files[0])}
-              className="w-full text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-slate-800 file:text-slate-200"
+              className="w-full text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:bg-white file:text-slate-700 file:cursor-pointer hover:file:bg-slate-50"
             />
           </div>
 
           {/* Catatan */}
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Keterangan</label>
+            <label className="font-semibold text-slate-600 block">Keterangan</label>
             <textarea
               rows="2"
               value={paymentForm.notes}
               onChange={(e) => setPaymentForm(prev => ({ ...prev, notes: e.target.value }))}
-              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-500"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/85">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={() => { 
@@ -1051,14 +1048,14 @@ export default function Dues({ user, settings }) {
                 setEditingDue(null); 
                 resetForm(); 
               }}
-              className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-750"
+              className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md"
             >
               {isLoading ? 'Menyimpan...' : (editingDue ? 'Simpan Perubahan' : 'Bayar Sekarang')}
             </button>
@@ -1069,38 +1066,38 @@ export default function Dues({ user, settings }) {
       {/* Print Receipt Modal */}
       <Modal isOpen={isReceiptOpen} onClose={() => setIsReceiptOpen(false)} title="Bukti Kuitansi Pembayaran">
         {selectedReceipt && (
-          <div className="space-y-6 text-xs text-slate-300 p-4 border border-slate-800 rounded-xl bg-slate-950/40">
+          <div className="space-y-6 text-xs text-slate-700 p-4 border border-slate-200 rounded-xl bg-slate-50">
             <div className="text-center space-y-1">
-              <h3 className="text-sm font-bold text-slate-100">KUITANSI RESMI</h3>
-              <p className="text-slate-555 uppercase tracking-widest text-[10px]">Taekwondo Club Management</p>
+              <h3 className="text-sm font-bold text-slate-800">KUITANSI RESMI</h3>
+              <p className="text-slate-500 uppercase tracking-widest text-[10px]">Taekwondo Club Management</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-y-2 border-t border-b border-slate-800 py-4">
-              <span className="text-slate-400">No. Transaksi</span>
-              <span className="text-slate-200 font-semibold text-right">#TX-{selectedReceipt.id}</span>
+            <div className="grid grid-cols-2 gap-y-2 border-t border-b border-slate-200 py-4">
+              <span className="text-slate-500">No. Transaksi</span>
+              <span className="text-slate-800 font-semibold text-right">#TX-{selectedReceipt.id}</span>
               
-              <span className="text-slate-400">Nama Anggota</span>
-              <span className="text-slate-200 font-semibold text-right">{selectedReceipt.member_name}</span>
+              <span className="text-slate-550">Nama Anggota</span>
+              <span className="text-slate-800 font-semibold text-right">{selectedReceipt.member_name}</span>
 
-              <span className="text-slate-400">No. Anggota</span>
-              <span className="text-slate-200 text-right">{selectedReceipt.member_number}</span>
+              <span className="text-slate-550">No. Anggota</span>
+              <span className="text-slate-800 text-right">{selectedReceipt.member_number}</span>
 
-              <span className="text-slate-400">Pembayaran Iuran</span>
-              <span className="text-slate-200 font-medium text-right">{getMonthName(selectedReceipt.month)} {selectedReceipt.year}</span>
+              <span className="text-slate-550">Pembayaran Iuran</span>
+              <span className="text-slate-800 font-medium text-right">{getMonthName(selectedReceipt.month)} {selectedReceipt.year}</span>
 
-              <span className="text-slate-400">Metode Bayar</span>
-              <span className="text-slate-200 uppercase text-right">{selectedReceipt.method}</span>
+              <span className="text-slate-550">Metode Bayar</span>
+              <span className="text-slate-800 uppercase text-right">{selectedReceipt.method}</span>
 
-              <span className="text-slate-400">Tanggal / Waktu</span>
-              <span className="text-slate-200 text-right">{new Date(selectedReceipt.payment_date).toLocaleDateString('id-ID')}</span>
+              <span className="text-slate-550">Tanggal / Waktu</span>
+              <span className="text-slate-800 text-right">{new Date(selectedReceipt.payment_date).toLocaleDateString('id-ID')}</span>
             </div>
 
-            <div className="flex justify-between items-center bg-blue-600/10 border border-blue-500/20 p-3 rounded-lg">
-              <span className="font-semibold text-blue-400">TOTAL BAYAR</span>
-              <span className="font-bold text-slate-100 text-sm">Rp {parseFloat(selectedReceipt.amount).toLocaleString()}</span>
+            <div className="flex justify-between items-center bg-blue-50 border border-blue-100 p-3 rounded-lg">
+              <span className="font-semibold text-blue-600 font-bold">TOTAL BAYAR</span>
+              <span className="font-bold text-blue-700 text-sm">Rp {parseFloat(selectedReceipt.amount).toLocaleString()}</span>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
               <button
                 onClick={() => {
                   const receiptWindow = window.open('', '_blank');
