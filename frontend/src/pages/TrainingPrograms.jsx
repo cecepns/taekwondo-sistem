@@ -323,8 +323,8 @@ export default function TrainingPrograms() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-bold text-slate-100">Program & Sesi Latihan</h2>
-          <p className="text-xs text-slate-400">
+          <h2 className="text-xl font-bold text-slate-800">Program & Sesi Latihan</h2>
+          <p className="text-xs text-slate-500">
             {activeTab === 'database' 
               ? 'Kelola database acuan latihan dasar (pemanasan, teknik, fisik, dsb.)' 
               : 'Gabungkan beberapa jenis latihan database ke dalam 1 Sesi Jadwal Latihan'}
@@ -348,13 +348,13 @@ export default function TrainingPrograms() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800">
+      <div className="flex border-b border-slate-200">
         <button 
           onClick={() => setActiveTab('database')}
           className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
             activeTab === 'database' 
-              ? 'border-blue-500 text-blue-500' 
-              : 'border-transparent text-slate-450 hover:text-slate-200'
+              ? 'border-blue-600 text-blue-600' 
+              : 'border-transparent text-slate-400 hover:text-slate-700'
           }`}
         >
           <Dumbbell size={14} /> Database Acuan Latihan
@@ -363,8 +363,8 @@ export default function TrainingPrograms() {
           onClick={() => setActiveTab('sessions')}
           className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
             activeTab === 'sessions' 
-              ? 'border-blue-500 text-blue-500' 
-              : 'border-transparent text-slate-450 hover:text-slate-200'
+              ? 'border-blue-600 text-blue-600' 
+              : 'border-transparent text-slate-400 hover:text-slate-700'
           }`}
         >
           <ListTodo size={14} /> Sesi & Jadwal Latihan
@@ -375,26 +375,26 @@ export default function TrainingPrograms() {
         /* Database Acuan Latihan Tab */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {programs.map(p => (
-            <div key={p.id} className="glass-panel p-5 rounded-2xl border border-slate-850 flex flex-col justify-between gap-4">
+            <div key={p.id} className="bg-white p-5 rounded-2xl border border-slate-200 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="p-2.5 bg-blue-600/10 border border-blue-500/20 text-blue-400 rounded-xl flex-shrink-0">
                     <Dumbbell size={18} />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-350 text-[10px] uppercase font-bold">
+                    <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-100 text-blue-700 text-[10px] uppercase font-bold">
                       {p.category}
                     </span>
                     <button 
                       onClick={() => startEditProgram(p)}
-                      className="p-1 text-slate-450 hover:text-blue-500 transition-colors"
+                      className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
                       title="Edit"
                     >
                       <Edit size={14} />
                     </button>
                     <button 
                       onClick={() => handleProgramDelete(p.id)}
-                      className="p-1 text-slate-450 hover:text-red-500 transition-colors"
+                      className="p-1 text-slate-400 hover:text-red-650 transition-colors"
                       title="Hapus"
                     >
                       <Trash2 size={14} />
@@ -403,18 +403,18 @@ export default function TrainingPrograms() {
                 </div>
 
                 <div className="space-y-1">
-                  <h3 className="font-bold text-slate-200 text-sm leading-snug">{p.name}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed truncate">{p.description || 'Tidak ada deskripsi'}</p>
+                  <h3 className="font-bold text-slate-800 text-sm leading-snug">{p.name}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed truncate">{p.description || 'Tidak ada deskripsi'}</p>
                 </div>
               </div>
 
-              <div className="border-t border-slate-800/80 pt-3.5 grid grid-cols-2 gap-2 text-[11px]">
-                <div className="flex items-center gap-1 text-slate-400">
-                  <Clock size={13} className="text-slate-500" />
+              <div className="border-t border-slate-100 pt-3.5 grid grid-cols-2 gap-2 text-[11px]">
+                <div className="flex items-center gap-1 text-slate-500">
+                  <Clock size={13} className="text-slate-400" />
                   <span>Durasi: {p.duration}</span>
                 </div>
-                <div className="flex items-center gap-1 text-slate-400">
-                  <Target size={13} className="text-slate-500" />
+                <div className="flex items-center gap-1 text-slate-500">
+                  <Target size={13} className="text-slate-400" />
                   <span className="truncate" title={p.target}>Target: {p.target || '-'}</span>
                 </div>
               </div>
@@ -497,26 +497,26 @@ export default function TrainingPrograms() {
         }} 
         title={editingProgram ? "Edit Program Acuan" : "Buat Program Acuan Baru"}
       >
-        <form onSubmit={handleSubmit} className="space-y-5 text-xs text-slate-350">
+        <form onSubmit={handleSubmit} className="space-y-5 text-xs text-slate-650">
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Nama Program Latihan *</label>
+            <label className="font-semibold text-slate-600 block">Nama Program Latihan *</label>
             <input
               type="text"
               placeholder="Contoh: Pemanasan / Peregangan"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:outline-none"
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Kategori Latihan *</label>
+              <label className="font-semibold text-slate-600 block">Kategori Latihan *</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-200"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:outline-none"
               >
                 <option value="Tendangan">Tendangan</option>
                 <option value="Poomsae">Poomsae</option>
@@ -527,52 +527,52 @@ export default function TrainingPrograms() {
               </select>
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-slate-300">Target Durasi *</label>
+              <label className="font-semibold text-slate-600 block">Target Durasi *</label>
               <input
                 type="text"
                 placeholder="Contoh: 10 menit"
                 value={formData.duration}
                 onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:outline-none"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Target Pencapaian *</label>
+            <label className="font-semibold text-slate-600 block">Target Pencapaian *</label>
             <input
               type="text"
               placeholder="Contoh: Meregangkan otot kaki sebelum latihan utama"
               value={formData.target}
               onChange={(e) => setFormData(prev => ({ ...prev, target: e.target.value }))}
-              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:outline-none"
               required
             />
           </div>
 
           <div className="space-y-1">
-            <label className="font-semibold text-slate-300">Deskripsi Program Latihan</label>
+            <label className="font-semibold text-slate-600 block">Deskripsi Program Latihan</label>
             <textarea
               rows="3"
               placeholder="Jelaskan instruksi latihan detail..."
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:outline-none"
             />
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-850 pt-4">
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-750"
+              className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md"
             >
               Simpan Program
             </button>
@@ -586,26 +586,26 @@ export default function TrainingPrograms() {
         onClose={() => setIsSessionModalOpen(false)}
         title={editingSession ? "Edit Sesi Latihan" : "Rancang Sesi Latihan Baru"}
       >
-        <form onSubmit={handleSessionSubmit} className="space-y-5 text-xs text-slate-300">
+        <form onSubmit={handleSessionSubmit} className="space-y-5 text-xs text-slate-650">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="font-semibold text-slate-350">Nama Program Sesi *</label>
+              <label className="font-semibold text-slate-600 block">Nama Program Sesi *</label>
               <input 
                 type="text"
                 value={sessionForm.program_name}
                 onChange={(e) => setSessionForm(prev => ({ ...prev, program_name: e.target.value }))}
                 placeholder="Contoh: Latihan Hari Selasa"
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:outline-none"
                 required
               />
             </div>
             <div className="space-y-1">
-              <label className="font-semibold text-slate-350">Tanggal Sesi *</label>
+              <label className="font-semibold text-slate-600 block">Tanggal Sesi *</label>
               <input 
                 type="date"
                 value={sessionForm.date}
                 onChange={(e) => setSessionForm(prev => ({ ...prev, date: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-950/40 border border-slate-800 rounded-lg text-slate-100 focus:border-blue-500 focus:outline-none"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:border-blue-500 focus:outline-none"
                 required
               />
             </div>
@@ -613,11 +613,11 @@ export default function TrainingPrograms() {
 
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <label className="font-semibold text-slate-200">Detail Sesi Latihan (Rangkaian Program)</label>
+              <label className="font-semibold text-slate-750 block">Detail Sesi Latihan (Rangkaian Program)</label>
               <button
                 type="button"
                 onClick={addSessionItem}
-                className="px-2.5 py-1.5 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-750 text-blue-400 font-bold text-[10px] flex items-center gap-1 transition-all"
+                className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-blue-600 font-bold text-[10px] flex items-center gap-1 transition-all shadow-sm"
               >
                 + Tambah Baris
               </button>
@@ -625,7 +625,7 @@ export default function TrainingPrograms() {
 
             <div className="space-y-3.5 max-h-64 overflow-y-auto pr-1">
               {sessionForm.items.map((item, idx) => (
-                <div key={idx} className="p-3 bg-slate-950/40 border border-slate-800 rounded-xl space-y-2 relative">
+                <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 relative">
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end">
                     
                     {/* Database Program Dropdown */}
@@ -634,7 +634,7 @@ export default function TrainingPrograms() {
                       <select
                         value={item.program_id}
                         onChange={(e) => handleSelectExercise(idx, e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-md text-slate-250 text-[11px]"
+                        className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-slate-700 text-[11px] focus:border-blue-500 focus:outline-none"
                       >
                         <option value="">-- Kustom / Baru --</option>
                         {programs.map(p => (
@@ -645,26 +645,26 @@ export default function TrainingPrograms() {
 
                     {/* Exercise Name */}
                     <div className="space-y-1 md:col-span-5">
-                      <label className="text-[10px] text-slate-500 font-semibold block mb-0.5">Nama Jenis Latihan *</label>
+                      <label className="text-[10px] text-slate-550 font-semibold block mb-0.5">Nama Jenis Latihan *</label>
                       <input 
                         type="text"
                         placeholder="Nama latihan"
                         value={item.name}
                         onChange={(e) => updateSessionItem(idx, 'name', e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-md text-slate-100 text-[11px]"
+                        className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-slate-800 text-[11px] focus:border-blue-500 focus:outline-none"
                         required
                       />
                     </div>
 
                     {/* Duration in minutes */}
                     <div className="space-y-1 md:col-span-2">
-                      <label className="text-[10px] text-slate-500 font-semibold block mb-0.5">Menit *</label>
+                      <label className="text-[10px] text-slate-550 font-semibold block mb-0.5">Menit *</label>
                       <input 
                         type="number"
                         placeholder="Durasi"
                         value={item.duration}
                         onChange={(e) => updateSessionItem(idx, 'duration', parseInt(e.target.value) || 0)}
-                        className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-md text-slate-100 text-[11px] font-semibold text-center"
+                        className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-slate-800 text-[11px] font-semibold text-center focus:border-blue-500 focus:outline-none"
                         required
                       />
                     </div>
@@ -675,7 +675,7 @@ export default function TrainingPrograms() {
                         type="button"
                         onClick={() => removeSessionItem(idx)}
                         disabled={sessionForm.items.length === 1}
-                        className="p-1.5 text-slate-500 hover:text-red-400 disabled:opacity-50 transition-colors"
+                        className="p-1.5 text-slate-450 hover:text-red-600 disabled:opacity-50 transition-colors"
                         title="Hapus"
                       >
                         <Trash2 size={15} />
@@ -685,13 +685,13 @@ export default function TrainingPrograms() {
 
                   {/* Keterangan description */}
                   <div className="space-y-1">
-                    <label className="text-[10px] text-slate-500 font-semibold block">Keterangan / Detail Gerakan</label>
+                    <label className="text-[10px] text-slate-550 font-semibold block">Keterangan / Detail Gerakan</label>
                     <input 
                       type="text"
                       placeholder="Instruksi tambahan..."
                       value={item.description}
                       onChange={(e) => updateSessionItem(idx, 'description', e.target.value)}
-                      className="w-full px-2.5 py-1.5 bg-slate-900 border border-slate-800 rounded-md text-slate-300 text-[11px]"
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-md text-slate-700 text-[11px] focus:border-blue-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -699,24 +699,24 @@ export default function TrainingPrograms() {
             </div>
 
             {/* Total Duration Footer Summary */}
-            <div className="flex justify-between items-center p-3 bg-blue-600/10 border border-blue-500/25 rounded-xl">
-              <span className="font-semibold text-blue-400">ESTIMASI TOTAL WAKTU LATIHAN</span>
-              <span className="font-bold text-slate-100 text-sm">{totalSessionFormDuration} MENIT</span>
+            <div className="flex justify-between items-center p-3 bg-blue-50 border border-blue-100 rounded-xl">
+              <span className="font-semibold text-blue-600">ESTIMASI TOTAL WAKTU LATIHAN</span>
+              <span className="font-bold text-blue-700 text-sm">{totalSessionFormDuration} MENIT</span>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-slate-850 pt-4">
+          <div className="flex justify-end gap-3 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={() => setIsSessionModalOpen(false)}
-              className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-750"
+              className="px-4 py-2 rounded-xl bg-slate-100 text-slate-655 hover:bg-slate-200 font-medium"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={isSessionLoading}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-lg"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold shadow-md"
             >
               {isSessionLoading ? 'Menyimpan Sesi...' : (editingSession ? 'Simpan Perubahan Sesi' : 'Jadwalkan Sesi')}
             </button>

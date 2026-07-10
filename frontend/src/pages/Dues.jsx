@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from '../utils/endpoints';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
 import AsyncSelect from 'react-select/async';
-import { 
+import {
   Search, Plus, Eye, Printer, FileText, Trash2, Calendar, Edit,
   FileSpreadsheet, HelpCircle, CheckCircle, AlertTriangle
 } from 'lucide-react';
@@ -56,7 +56,7 @@ export default function Dues({ user, settings }) {
       if (res.success) {
         let filtered = res.data || [];
         if (search) {
-          filtered = filtered.filter(d => 
+          filtered = filtered.filter(d =>
             d.member_name.toLowerCase().includes(search.toLowerCase())
           );
         }
@@ -138,7 +138,7 @@ export default function Dues({ user, settings }) {
     } else {
       updatedMonths = [...paymentForm.months, month];
     }
-    
+
     const duesRate = parseFloat(settings?.default_dues_amount) || 85000;
     const estimatedFee = updatedMonths.length * duesRate;
     setPaymentForm(prev => ({
@@ -388,7 +388,7 @@ export default function Dues({ user, settings }) {
         if (res.success) {
           let list = res.data || [];
           if (search) {
-            list = list.filter(d => 
+            list = list.filter(d =>
               d.member_name.toLowerCase().includes(search.toLowerCase())
             );
           }
@@ -437,7 +437,7 @@ export default function Dues({ user, settings }) {
         if (res.success) {
           let list = res.data || [];
           if (search) {
-            list = list.filter(d => 
+            list = list.filter(d =>
               d.member_name.toLowerCase().includes(search.toLowerCase())
             );
           }
@@ -549,10 +549,10 @@ export default function Dues({ user, settings }) {
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: state.isSelected 
-        ? '#3b82f6' 
-        : state.isFocused 
-          ? '#f1f5f9' 
+      backgroundColor: state.isSelected
+        ? '#3b82f6'
+        : state.isFocused
+          ? '#f1f5f9'
           : 'transparent',
       color: state.isSelected ? '#ffffff' : '#334155',
       fontSize: '12px',
@@ -583,12 +583,12 @@ export default function Dues({ user, settings }) {
         <div>
           <h2 className="text-xl font-bold text-slate-800">Kelola Pembayaran Iuran</h2>
           <p className="text-xs text-slate-500">
-            {activeTab === 'list' 
-              ? 'Daftar riwayat penerimaan pembayaran iuran bulanan anggota' 
+            {activeTab === 'list'
+              ? 'Daftar riwayat penerimaan pembayaran iuran bulanan anggota'
               : 'Daftar tagihan bulanan anggota yang belum terlunasi'}
           </p>
         </div>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
           className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-blue-600/20"
         >
@@ -598,30 +598,28 @@ export default function Dues({ user, settings }) {
 
       {/* Tabs Layout */}
       <div className="flex border-b border-slate-200">
-        <button 
+        <button
           onClick={() => { setActiveTab('list'); setPage(1); }}
-          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === 'list' 
-              ? 'border-blue-600 text-blue-600' 
+          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all ${activeTab === 'list'
+              ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-400 hover:text-slate-700'
-          }`}
+            }`}
         >
           Riwayat Pembayaran
         </button>
-        <button 
+        <button
           onClick={() => { setActiveTab('unpaid'); setPage(1); }}
-          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
-            activeTab === 'unpaid' 
-              ? 'border-blue-600 text-blue-600' 
+          className={`px-5 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${activeTab === 'unpaid'
+              ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-400 hover:text-slate-700'
-          }`}
+            }`}
         >
           Tagihan & Penagihan
-          {unpaidDues.length > 0 && (
+          {/* {unpaidDues.length > 0 && (
             <span className="px-1.5 py-0.5 rounded-full text-[9px] bg-red-650 text-white font-bold animate-pulse">
               {unpaidDues.length}
             </span>
-          )}
+          )} */}
         </button>
       </div>
 
@@ -734,16 +732,16 @@ export default function Dues({ user, settings }) {
                         <td className="p-4">
                           <div className="flex items-center justify-center gap-2">
                             {d.attachment && (
-                              <a 
-                                href={d.attachment} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
+                              <a
+                                href={d.attachment}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-semibold transition-colors"
                               >
                                 Lihat Bukti
                               </a>
                             )}
-                            <button 
+                            <button
                               onClick={() => {
                                 setSelectedReceipt(d);
                                 setIsReceiptOpen(true);
@@ -753,14 +751,14 @@ export default function Dues({ user, settings }) {
                             >
                               <Printer size={13} /> Kuitansi
                             </button>
-                            <button 
+                            <button
                               onClick={() => startEditDue(d)}
                               className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-650 border border-slate-200 hover:text-blue-600 transition-colors"
                               title="Edit"
                             >
                               <Edit size={13} />
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleDueDelete(d.id)}
                               className="p-1.5 rounded bg-white hover:bg-slate-50 text-slate-650 border border-slate-200 hover:text-red-600 transition-colors"
                               title="Hapus"
@@ -776,7 +774,7 @@ export default function Dues({ user, settings }) {
               </div>
             )}
 
-            <Pagination 
+            <Pagination
               page={page}
               limit={limit}
               total={total}
@@ -889,18 +887,18 @@ export default function Dues({ user, settings }) {
       )}
 
       {/* Record Payment Modal */}
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => { 
-          setIsModalOpen(false); 
-          setEditingDue(null); 
-          resetForm(); 
-        }} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingDue(null);
+          resetForm();
+        }}
         title={editingDue ? "Edit Transaksi Iuran" : "Catat Pembayaran Iuran"}
       >
         <form onSubmit={handlePaySubmit} className="space-y-6 text-xs text-slate-650">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
+
             {/* Pilih Anggota */}
             <div className="space-y-1 md:col-span-2">
               <label className="font-semibold text-slate-600 block mb-1">Pilih Anggota *</label>
@@ -968,13 +966,12 @@ export default function Dues({ user, settings }) {
               <label className="font-semibold text-slate-600 block">Pilih Bulan Pembayaran *</label>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
-                  <label 
+                  <label
                     key={m}
-                    className={`py-2 px-1 rounded-lg border text-center font-medium block cursor-pointer transition-all ${
-                      paymentForm.months.includes(m)
+                    className={`py-2 px-1 rounded-lg border text-center font-medium block cursor-pointer transition-all ${paymentForm.months.includes(m)
                         ? 'bg-blue-50 border-blue-500 text-blue-600 font-bold'
                         : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="checkbox"
@@ -1022,8 +1019,8 @@ export default function Dues({ user, settings }) {
           {/* Upload attachment */}
           <div className="space-y-1">
             <label className="font-semibold text-slate-600 block">Bukti Bayar / Slip Transfer (Optional)</label>
-            <input 
-              type="file" 
+            <input
+              type="file"
               onChange={(e) => setAttachment(e.target.files[0])}
               className="w-full text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-slate-200 file:text-xs file:bg-white file:text-slate-700 file:cursor-pointer hover:file:bg-slate-50"
             />
@@ -1044,10 +1041,10 @@ export default function Dues({ user, settings }) {
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => { 
-                setIsModalOpen(false); 
-                setEditingDue(null); 
-                resetForm(); 
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingDue(null);
+                resetForm();
               }}
               className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium"
             >
@@ -1076,7 +1073,7 @@ export default function Dues({ user, settings }) {
             <div className="grid grid-cols-2 gap-y-2 border-t border-b border-slate-200 py-4">
               <span className="text-slate-500">No. Transaksi</span>
               <span className="text-slate-800 font-semibold text-right">#TX-{selectedReceipt.id}</span>
-              
+
               <span className="text-slate-550">Nama Anggota</span>
               <span className="text-slate-800 font-semibold text-right">{selectedReceipt.member_name}</span>
 
